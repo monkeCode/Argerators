@@ -1,0 +1,85 @@
+{
+    "name": "InputSystem",
+    "maps": [
+        {
+            "name": "Camera",
+            "id": "b1f5e8ab-5cb5-456f-8eca-0140d84122e3",
+            "actions": [
+                {
+                    "name": "PointerMove",
+                    "type": "Value",
+                    "id": "abd70ee3-efda-41dc-8538-af5aeee7d279",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Zoom",
+                    "type": "Value",
+                    "id": "46c4b9f0-1d43-49c6-b610-07e38e6192e0",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "MoveState",
+                    "type": "Button",
+                    "id": "ba09ed14-3ca2-476a-8088-3aa7ad0fdb23",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "0867fb4a-3813-4054-88b1-355224a930ae",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PointerMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e61d4ebe-682e-4f7a-b6e5-e37d7afd297f",
+                    "path": "<Mouse>/scroll/y",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Zoom",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "425021c1-47f2-4649-8ba3-2ef5e0449795",
+                    "path": "<Mouse>/middleButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveState",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1a63940a-c8b0-4e9b-9cf5-da66a4a4720c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveState",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
