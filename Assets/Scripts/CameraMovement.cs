@@ -7,8 +7,8 @@ public class CameraMovement : MonoBehaviour
 {
     [SerializeField] private Transform _focusObject;
 
-    [SerializeField] [Range(1, 5)] private float _minDistance;
-    [SerializeField] [Range(6, 15)] private float _maxDistance;
+    [SerializeField] [Range(30, 50)] private float _minDistance;
+    [SerializeField] [Range(60, 100)] private float _maxDistance;
     
     private InputSystem _input;
     private bool _isMoving;
@@ -56,9 +56,11 @@ public class CameraMovement : MonoBehaviour
     private void Move()
     {
         var dir = _currentMousePos - _startMousePos;
-        transform.RotateAround(_focusObject.position,new Vector3(0,1,0), dir.x/200);
+        transform.RotateAround(_focusObject.position,new Vector3(0,1,0), dir.x/300);
         transform.position =
-            Vector3.Lerp(transform.position, transform.position - transform.up * dir.y/10 , Time.deltaTime);
+            Vector3.Lerp(transform.position, 
+                transform.position - transform.up * dir.y/100 * Vector3.Distance(_focusObject.position,transform.position), 
+                Time.deltaTime);
     }
 
     private void Update()
