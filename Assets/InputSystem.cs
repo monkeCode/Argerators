@@ -101,6 +101,34 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Input"",
+            ""id"": ""6352e32d-ab28-4bfd-a712-16314e7a5ce9"",
+            ""actions"": [
+                {
+                    ""name"": ""Spawn"",
+                    ""type"": ""Button"",
+                    ""id"": ""f7e1b132-b69d-4ced-9c9c-0d3a3653b962"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""b1e3e1ae-5202-490a-b1da-2999d6e6c242"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Spawn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -110,6 +138,9 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         m_Camera_PointerMove = m_Camera.FindAction("PointerMove", throwIfNotFound: true);
         m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
         m_Camera_MoveState = m_Camera.FindAction("MoveState", throwIfNotFound: true);
+        // Input
+        m_Input = asset.FindActionMap("Input", throwIfNotFound: true);
+        m_Input_Spawn = m_Input.FindAction("Spawn", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -214,10 +245,47 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         }
     }
     public CameraActions @Camera => new CameraActions(this);
+
+    // Input
+    private readonly InputActionMap m_Input;
+    private IInputActions m_InputActionsCallbackInterface;
+    private readonly InputAction m_Input_Spawn;
+    public struct InputActions
+    {
+        private @InputSystem m_Wrapper;
+        public InputActions(@InputSystem wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Spawn => m_Wrapper.m_Input_Spawn;
+        public InputActionMap Get() { return m_Wrapper.m_Input; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(InputActions set) { return set.Get(); }
+        public void SetCallbacks(IInputActions instance)
+        {
+            if (m_Wrapper.m_InputActionsCallbackInterface != null)
+            {
+                @Spawn.started -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
+                @Spawn.performed -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
+                @Spawn.canceled -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
+            }
+            m_Wrapper.m_InputActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Spawn.started += instance.OnSpawn;
+                @Spawn.performed += instance.OnSpawn;
+                @Spawn.canceled += instance.OnSpawn;
+            }
+        }
+    }
+    public InputActions @Input => new InputActions(this);
     public interface ICameraActions
     {
         void OnPointerMove(InputAction.CallbackContext context);
         void OnZoom(InputAction.CallbackContext context);
         void OnMoveState(InputAction.CallbackContext context);
+    }
+    public interface IInputActions
+    {
+        void OnSpawn(InputAction.CallbackContext context);
     }
 }
