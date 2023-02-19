@@ -107,9 +107,9 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
             ""id"": ""6352e32d-ab28-4bfd-a712-16314e7a5ce9"",
             ""actions"": [
                 {
-                    ""name"": ""Spawn"",
+                    ""name"": ""CylinderHandle"",
                     ""type"": ""Button"",
-                    ""id"": ""f7e1b132-b69d-4ced-9c9c-0d3a3653b962"",
+                    ""id"": ""09db7508-6ede-42bc-b486-96b8df5bd434"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -119,12 +119,12 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
             ""bindings"": [
                 {
                     ""name"": """",
-                    ""id"": ""b1e3e1ae-5202-490a-b1da-2999d6e6c242"",
+                    ""id"": ""fb3c83ef-e1f0-4e95-8675-8cdfcfd88525"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Spawn"",
+                    ""action"": ""CylinderHandle"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -140,7 +140,7 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         m_Camera_MoveState = m_Camera.FindAction("MoveState", throwIfNotFound: true);
         // Input
         m_Input = asset.FindActionMap("Input", throwIfNotFound: true);
-        m_Input_Spawn = m_Input.FindAction("Spawn", throwIfNotFound: true);
+        m_Input_CylinderHandle = m_Input.FindAction("CylinderHandle", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -249,12 +249,12 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
     // Input
     private readonly InputActionMap m_Input;
     private IInputActions m_InputActionsCallbackInterface;
-    private readonly InputAction m_Input_Spawn;
+    private readonly InputAction m_Input_CylinderHandle;
     public struct InputActions
     {
         private @InputSystem m_Wrapper;
         public InputActions(@InputSystem wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Spawn => m_Wrapper.m_Input_Spawn;
+        public InputAction @CylinderHandle => m_Wrapper.m_Input_CylinderHandle;
         public InputActionMap Get() { return m_Wrapper.m_Input; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -264,16 +264,16 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
         {
             if (m_Wrapper.m_InputActionsCallbackInterface != null)
             {
-                @Spawn.started -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
-                @Spawn.performed -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
-                @Spawn.canceled -= m_Wrapper.m_InputActionsCallbackInterface.OnSpawn;
+                @CylinderHandle.started -= m_Wrapper.m_InputActionsCallbackInterface.OnCylinderHandle;
+                @CylinderHandle.performed -= m_Wrapper.m_InputActionsCallbackInterface.OnCylinderHandle;
+                @CylinderHandle.canceled -= m_Wrapper.m_InputActionsCallbackInterface.OnCylinderHandle;
             }
             m_Wrapper.m_InputActionsCallbackInterface = instance;
             if (instance != null)
             {
-                @Spawn.started += instance.OnSpawn;
-                @Spawn.performed += instance.OnSpawn;
-                @Spawn.canceled += instance.OnSpawn;
+                @CylinderHandle.started += instance.OnCylinderHandle;
+                @CylinderHandle.performed += instance.OnCylinderHandle;
+                @CylinderHandle.canceled += instance.OnCylinderHandle;
             }
         }
     }
@@ -286,6 +286,6 @@ public partial class @InputSystem : IInputActionCollection2, IDisposable
     }
     public interface IInputActions
     {
-        void OnSpawn(InputAction.CallbackContext context);
+        void OnCylinderHandle(InputAction.CallbackContext context);
     }
 }

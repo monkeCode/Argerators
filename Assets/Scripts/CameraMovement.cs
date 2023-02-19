@@ -7,7 +7,7 @@ public class CameraMovement : MonoBehaviour
 {
     [SerializeField] private Transform _focusObject;
 
-    [SerializeField] [Range(30, 50)] private float _minDistance;
+    [SerializeField] [Range(15, 50)] private float _minDistance;
     [SerializeField] [Range(60, 100)] private float _maxDistance;
     
     private InputSystem _input;

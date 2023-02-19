@@ -85,9 +85,9 @@
             "id": "6352e32d-ab28-4bfd-a712-16314e7a5ce9",
             "actions": [
                 {
-                    "name": "Spawn",
+                    "name": "CylinderHandle",
                     "type": "Button",
-                    "id": "f7e1b132-b69d-4ced-9c9c-0d3a3653b962",
+                    "id": "09db7508-6ede-42bc-b486-96b8df5bd434",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -97,12 +97,12 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "b1e3e1ae-5202-490a-b1da-2999d6e6c242",
+                    "id": "fb3c83ef-e1f0-4e95-8675-8cdfcfd88525",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Spawn",
+                    "action": "CylinderHandle",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
