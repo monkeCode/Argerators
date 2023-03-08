@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Panel : MonoBehaviour
 {
@@ -30,10 +32,28 @@ public class Panel : MonoBehaviour
         _plane.localScale = new Vector3(_cylinders.Count/5.0f, 1, 1);
     }
 
-    public Cylinder AddNewCylinder()
+    private void Start()
+    {
+        var data = Saver.Load();
+        if(data == null) return;
+
+        foreach (var cyl in data)
+        {
+            var createdCyl = AddNewCylinder(cyl.Position);
+            for (int i = 0; i < cyl.DependCount; i++)
+            {
+                AddDependedCylinder(createdCyl);
+            }
+        }
+    }
+
+    public Cylinder AddNewCylinder(float z = 0)
     {
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
+        var pos = obj.transform.position;
+        pos.z = z;
+        obj.transform.position = pos;
         Resize();
         return obj;
     }
@@ -44,9 +64,25 @@ public class Panel : MonoBehaviour
         if(index == -1) return null;
         var obj = Instantiate(_dependedCylinder, transform);
         based.Add(obj);
+        obj.ChangePosition(based.transform.localPosition.z/5.0f);
         _cylinders.Insert(index,obj);
         Resize();
         return obj;
+    }
+
+    public void Save()
+    {
+        List<Saver.LogicalCylinder> saveData = new List<Saver.LogicalCylinder>();
+        foreach(var c in _cylinders)
+        {
+            if(c is DependedCylinder) continue;
+            
+            var lCyl = new Saver.LogicalCylinder();
+            lCyl.Position = c.transform.position.z;
+            lCyl.DependCount = c.Count;
+            saveData.Add(lCyl);
+        }
+        Saver.Save(saveData);
     }
     
         [ContextMenu("Random")]

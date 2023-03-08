@@ -40,7 +40,8 @@ public class CylinderMover : MonoBehaviour
             var ray = _camera.ScreenPointToRay(_mousePos);
             if (!Physics.Raycast(ray, out var hit, 100, _planeLayer)) return;
             var position = _cylinder.transform.position;
-            var newPos = new Vector3(position.x,position.y, hit.point.z);
+
+            var newPos = new Vector3(position.x, hit.point.y+ hit.normal.y, hit.point.z);
             _cylinder.transform.position = newPos;
 
     }
