@@ -10,8 +10,28 @@ public class Panel : MonoBehaviour
     [SerializeField] private Cylinder _cylinder;
     [SerializeField] private DependedCylinder _dependedCylinder;
     [SerializeField] private Transform _plane;
+    [SerializeField] private float _maxAngleOffset = 23.20f;
 
     private List<Cylinder> _cylinders = new();
+
+    private void Update()
+    {
+        var angle = CalculateAngle();
+        //Debug.Log(angle);
+        angle = Math.Clamp(angle, -_maxAngleOffset, _maxAngleOffset);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(angle,0,0),0.1f);
+    }
+
+    private float CalculateAngle()
+    {
+        var angle = 0.0f;
+        foreach (var cyl in _cylinders)
+        {
+            angle += (cyl.transform.position.z - transform.position.z) * cyl.GetMass();
+        }
+
+        return angle;
+    }
     
     [ContextMenu("Angle")]
     private void UpdateAngle()
@@ -107,4 +127,12 @@ public class Panel : MonoBehaviour
         _cylinders.ForEach(it => Destroy(it.gameObject));
         _cylinders.Clear();
     }
+
+    public float GetAngle()
+    {
+        var ang = transform.rotation.eulerAngles.x > 180
+            ? transform.rotation.eulerAngles.x - 360
+            : transform.rotation.eulerAngles.x;
+        return (ang+ _maxAngleOffset) / (2 * _maxAngleOffset);
+    } 
 }

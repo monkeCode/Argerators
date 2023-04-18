@@ -7,6 +7,8 @@ public class Cylinder : MonoBehaviour, ICollection<DependedCylinder>
 {
     [SerializeField] private List<DependedCylinder> _dependedCylinders;
 
+    [SerializeField] protected float _mass = 1;
+
     private float _lastZ;
 
     protected virtual void Start()
@@ -57,6 +59,8 @@ public class Cylinder : MonoBehaviour, ICollection<DependedCylinder>
     {
        return _dependedCylinders.Remove(item);
     }
+
+    public float GetMass() => _mass;
 
     public int Count => _dependedCylinders.Count;
     public bool IsReadOnly => false;
