@@ -23,8 +23,14 @@ public class DependedCylinder : Cylinder
    public void SetFormula(string f)
    {
       _formula = f;
-      _function = FormulaParser.CreateFunc(f.Replace(" ", ""));
+      UpdateFormula();
    }
 
+   [ContextMenu("UpdateFormula")]
+   private void UpdateFormula()
+   {
+      _function = FormulaParser.CreateFunc(_formula.Replace(" ", ""));
+   }
+   
    public string GetFormula() => _formula;
 }
