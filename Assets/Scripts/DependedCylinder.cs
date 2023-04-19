@@ -7,7 +7,9 @@ using UnityEngine;
 public class DependedCylinder : Cylinder
 {
    [SerializeField] private string _formula;
-   public void ChangePosition(Dictionary<string, float> nameToPos)
+
+   private ICalculable _function;
+   public void ChangePosition(Dictionary<string, double> nameToPos)
    {
       var position = transform.localPosition;
       var res = CalculateFormula(nameToPos);
@@ -16,18 +18,13 @@ public class DependedCylinder : Cylinder
       transform.localPosition = position;
    }
 
-   private float CalculateFormula(Dictionary<string, float> dictionary)
+   private float CalculateFormula(Dictionary<string, double> dictionary) => (float) _function.Calculate(dictionary);
+
+   public void SetFormula(string f)
    {
-      StringBuilder adaptedFormula = new StringBuilder(_formula);
-      foreach (var n in dictionary.Keys)
-      {
-         adaptedFormula =  adaptedFormula.Replace(n, dictionary[n].ToString());
-      }
-
-      return (float) FormulaParser.Calculate(adaptedFormula.Replace(" ", "").ToString());
+      _formula = f;
+      _function = FormulaParser.CreateFunc(f.Replace(" ", ""));
    }
-
-   public void SetFormula(string f) => _formula = f;
 
    public string GetFormula() => _formula;
 }

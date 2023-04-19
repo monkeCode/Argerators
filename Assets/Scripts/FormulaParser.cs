@@ -1,79 +1,183 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 public static class FormulaParser
 {
-    private static Regex minusRegex = new Regex("(?<=\\d)-(?=>\\d)");
+    private static Regex minusRegex = new Regex("(?<![-+\\^/\\*])-(?![-+\\^/\\*])");
 
-    private static Regex functionRegex = new Regex("^(?<func>\\w*)\\((?<args>.*?)\\)$");
+    private static Regex functionRegex = new Regex("(?<func>\\w*)\\((?<args>.*?)\\)");
 
-    private static Dictionary<string, Func<double[], double>> _funcs = new()
+    private static Regex branchesRegex = new Regex("^-?\\(.*?\\)$");
+
+    public static ICalculable CreateFunc(string expression)
     {
-        {"min", Min},
-        {"max", Max},
-        {"sin", doubles => Math.Sin(doubles[0])},
-        {"cos", doubles => Math.Cos(doubles[0])},
-        {"tan", doubles => Math.Tan(doubles[0])},
-        {"asin", doubles => Math.Asin(doubles[0])},
-        {"acos", doubles => Math.Acos(doubles[0])},
-        {"atan", doubles => Math.Atan(doubles[0])}
-    };
-    
-    public static double Calculate(string expression)
+        List<(string, string)> functionReplacement = new List<(string, string)>();
+        StringBuilder builder = new StringBuilder(expression);
+        foreach(var x in functionRegex.Matches(expression).ToList())
+        {
+            if (x.Value == expression) break;
+            var replacement = x.Groups["args"].Value.Replace("(","").Replace(")","") +"param"+ x.Groups["func"].Value;
+            functionReplacement.Add((replacement, x.Value));
+            builder.Replace(x.Value, replacement);
+        }
+        List<(string repl, ICalculable)> functions = new List<(string repl, ICalculable)>();
+        foreach(var f in functionReplacement)
+        {
+            functions.Add((f.Item1, CreateFunc(f.Item2)));
+        }
+        return CreateLambda(builder.ToString(),functions);
+    }
+    private static ICalculable CreateLambda(string expression, List<(string repl, ICalculable)> functions)
     {
-        try
-        {
-            return Convert.ToDouble(expression);
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        if (functionRegex.IsMatch(expression))
+        
+        if(functionRegex.IsMatch(expression))
         {
             var match = functionRegex.Match(expression);
-            return _funcs[match.Groups["func"].Value]
-                (match.Groups["args"].Value.Split(";")
-                    .Select(Calculate).ToArray());
+            if(match.Value == expression)
+            {
+                var args = match.Groups["args"].Value.Split(";").Select(it => CreateFunc(it)).ToArray();
+                return new FunctionOperation(match.Groups["func"].Value, args);
+            }
         }
+
         if (minusRegex.IsMatch(expression))
         {
             var parts = minusRegex.Split(expression, 2);
-            parts[1] = parts[1].Replace("--","+")
-                .Replace("+-","-").Replace("-", "plus").Replace("+", "-").Replace("plus","+");
-            return Calculate(parts[0]) - Calculate(parts[1]);
+            parts[1] = parts[1].Replace("--", "+")
+                .Replace("+-", "-").Replace("-", "plus").Replace("+", "-").Replace("plus", "+");
+            if (string.IsNullOrEmpty(parts[0]))
+                return new BinaryOperation("-", CreateLambda("0", functions), CreateLambda(parts[1], functions));
+            return new BinaryOperation("-", CreateLambda(parts[0], functions), CreateLambda(parts[1], functions));
         }
 
         if (expression.Contains("+"))
         {
             var parts = expression.Split("+", 2, StringSplitOptions.RemoveEmptyEntries);
-            return Calculate(parts[0]) + Calculate(parts[1]);
+            return new BinaryOperation("+", CreateLambda(parts[0], functions), CreateLambda(parts[1], functions));
         }
         if (expression.Contains("/"))
         {
-            var parts = expression.Split("/");
-            return Calculate(string.Join("/", parts[..^1])) / Calculate(parts[^1]);
+            return CreateOp("/", expression, functions);
         }
         if (expression.Contains("*"))
         {
-            var parts = expression.Split("*");
-            return Calculate(string.Join("*", parts[..^1])) * Calculate(parts[^1]);
+            return CreateOp("*", expression, functions);
         }
         if (expression.Contains("^"))
         {
-            var parts = expression.Split("^");
-            return Calculate(string.Join("^", parts[..^1])) * Calculate(parts[^1]);
+            return CreateOp("^", expression, functions);
         }
-        
-        return 0;
+        if(double.TryParse(expression, out double res))
+        {
+            return new ConstOperand(res);
+        }
+
+        var func = functions.FirstOrDefault(it => it.repl == expression).Item2;
+        if(func != null)
+        {
+            return func;
+        }
+
+        return new VariableOperand(expression);
+
     }
 
-    private static double Min(double[] s) => s.Min();
+    private static ICalculable CreateOp(string op, string expression, List<(string repl, ICalculable)> functions)
+    {
+        var parts = expression.Split(op);
+        return new BinaryOperation(op, CreateLambda(string.Join(op, parts[..^1]), functions), CreateLambda(parts[^1], functions));
+    }
 
-    private static double Max(double[] s) => s.Max();
-    
+}
 
+public interface ICalculable
+{
+    double Calculate(Dictionary<string, double> parameters);
+}
+
+public class VariableOperand : ICalculable
+{
+    private string _expression;
+
+    public VariableOperand(string expression)
+    {
+        _expression = expression;
+    }
+
+    public double Calculate(Dictionary<string, double> parameters)
+    {
+        return parameters[_expression];
+    }
+}
+public class ConstOperand : ICalculable
+{
+    private double _value;
+
+    public ConstOperand(double expression)
+    {
+        _value = expression;
+    }
+
+    public double Calculate(Dictionary<string, double> parameters)
+    {
+        return _value;
+    }
+}
+
+public class BinaryOperation : ICalculable
+{
+    private static Dictionary<string, Func<Dictionary<string, double>, ICalculable, ICalculable, double>> _operations = new()
+    {
+        {"-", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) - a2.Calculate(param)},
+        {"+", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) + a2.Calculate(param)},
+        {"/", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) / a2.Calculate(param)},
+        {"*", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) * a2.Calculate(param)},
+        {"^", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => Math.Pow(a1.Calculate(param), a2.Calculate(param))},
+    };
+
+    private Func<Dictionary<string, double>, ICalculable, ICalculable, double> _operation;
+
+    private ICalculable _left;
+
+    private ICalculable _right;
+
+    public BinaryOperation(string op, ICalculable left, ICalculable right)
+    {
+        _operation = _operations[op];
+        _left = left;
+        _right = right;
+    }
+
+    public double Calculate(Dictionary<string, double> parameters)
+    {
+        return _operation(parameters, _left, _right);
+    }
+}
+
+public class FunctionOperation : ICalculable
+{
+    private static Dictionary<string, Func<Dictionary<string, double>, ICalculable[], double>> _operations = new()
+    {
+        {"sin", (Dictionary<string, double> param,ICalculable[] a) => Math.Sin(a[0].Calculate(param))},
+        {"cos", (Dictionary<string, double> param,ICalculable[] a) => Math.Cos(a[0].Calculate(param))},
+        {"tan", (Dictionary<string, double> param,ICalculable[] a) => Math.Tan(a[0].Calculate(param))},
+    };
+
+    private ICalculable[] _calculables;
+
+    private Func<Dictionary<string, double>, ICalculable[], double> _func;
+
+    public FunctionOperation(string op, ICalculable[] calculables)
+    {
+        _func = _operations[op];
+        _calculables = calculables;
+    }
+
+    public double Calculate(Dictionary<string, double> parameters)
+    {
+       return _func(parameters, _calculables);
+    }
 }

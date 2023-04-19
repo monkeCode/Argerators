@@ -45,8 +45,8 @@ public class Panel : MonoBehaviour
         transform.rotation = Quaternion.Euler(_angle,0,0);
     }
 
-    private Dictionary<string, float> GetCylPositions()=> 
-        _cylinders.ToDictionary(cylinder => cylinder.Name, cylinder=>cylinder.transform.localPosition.z/5);
+    private Dictionary<string, double> GetCylPositions()=> 
+        _cylinders.ToDictionary(cylinder => cylinder.Name, cylinder=> (double)cylinder.transform.localPosition.z/5);
 
     private void Resize()
     {
