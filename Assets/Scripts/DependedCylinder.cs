@@ -28,4 +28,6 @@ public class DependedCylinder : Cylinder
    }
 
    public void SetFormula(string f) => _formula = f;
+
+   public string GetFormula() => _formula;
 }

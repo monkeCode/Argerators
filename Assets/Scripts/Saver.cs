@@ -1,10 +1,6 @@
-
-
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
-using Newtonsoft.Json;
 using UnityEngine;
 
 public static class Saver
@@ -17,15 +13,27 @@ public static class Saver
     {
         public float Position;
         public string Name;
+        public float Mass;
     }
+    [Serializable]
     public class DependedLogicalCylinder: LogicalCylinder
     {
         public string Formula;
     }
+    
+    [Serializable]
+    private class Wrapper<T>
+    {
+        public T[] Items;
+    }
 
     public static void Save(List<LogicalCylinder> cylinders)
     {
-        var res = JsonConvert.SerializeObject(cylinders);
+        var wrapper = new Wrapper<LogicalCylinder>
+        {
+            Items = cylinders.ToArray()
+        };
+        var res = JsonUtility.ToJson(wrapper);
         PlayerPrefs.SetString(_key,res);
         PlayerPrefs.Save();
         Debug.Log("saved");
@@ -33,7 +41,11 @@ public static class Saver
 
     public static void Save(List<DependedLogicalCylinder> cylinders)
     {
-        var res = JsonConvert.SerializeObject(cylinders);
+        var wrapper = new Wrapper<DependedLogicalCylinder>
+        {
+            Items = cylinders.ToArray()
+        };
+        var res = JsonUtility.ToJson(wrapper);
         PlayerPrefs.SetString(_key2,res);
         PlayerPrefs.Save();
         Debug.Log("saved");
@@ -42,7 +54,13 @@ public static class Saver
     public static List<LogicalCylinder> Load()
     {
         var res = PlayerPrefs.GetString(_key);
-        return res == null ? null : JsonConvert.DeserializeObject<LogicalCylinder[]>(res).ToList();
+        return res == null ? null :  JsonUtility.FromJson<Wrapper<LogicalCylinder>>(res).Items.ToList();
+    }
+
+    public static List<DependedLogicalCylinder> LoadDependedCylinders()
+    {
+        var res = PlayerPrefs.GetString(_key2);
+        return res == null ? null :  JsonUtility.FromJson<Wrapper<DependedLogicalCylinder>>(res).Items.ToList();
     }
 
 }

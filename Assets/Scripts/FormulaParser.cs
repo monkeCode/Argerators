@@ -12,7 +12,13 @@ public static class FormulaParser
     private static Dictionary<string, Func<double[], double>> _funcs = new()
     {
         {"min", Min},
-        {"max", Max}
+        {"max", Max},
+        {"sin", doubles => Math.Sin(doubles[0])},
+        {"cos", doubles => Math.Cos(doubles[0])},
+        {"tan", doubles => Math.Tan(doubles[0])},
+        {"asin", doubles => Math.Asin(doubles[0])},
+        {"acos", doubles => Math.Acos(doubles[0])},
+        {"atan", doubles => Math.Atan(doubles[0])}
     };
     
     public static double Calculate(string expression)
@@ -31,7 +37,7 @@ public static class FormulaParser
             var match = functionRegex.Match(expression);
             return _funcs[match.Groups["func"].Value]
                 (match.Groups["args"].Value.Split(";")
-                    .Select(Convert.ToDouble).ToArray());
+                    .Select(Calculate).ToArray());
         }
         if (minusRegex.IsMatch(expression))
         {
@@ -68,5 +74,6 @@ public static class FormulaParser
     private static double Min(double[] s) => s.Min();
 
     private static double Max(double[] s) => s.Max();
+    
 
 }

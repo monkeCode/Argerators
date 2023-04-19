@@ -68,45 +68,88 @@ public class Panel : MonoBehaviour
 
         foreach (var cyl in data)
         {
-            var createdCyl = AddNewCylinder(cyl.Position);
+            AddNewCylinder(cyl);
+        }
+
+        var depDate = Saver.LoadDependedCylinders();
+        if(depDate == null) return;
+        foreach (var d in depDate)
+        {
+            AddDependedCylinder(d);
         }
     }
 
-    public Cylinder AddNewCylinder(float z = 0)
+    private DependedCylinder AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)
+    {
+        var obj = Instantiate(_dependedCylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetFormula(dependedLogicalCylinder.Formula);
+        obj.Name = dependedLogicalCylinder.Name;
+        obj.SetMass(dependedLogicalCylinder.Mass);
+        Resize();
+        return obj;
+    }
+
+    public void AddNewCylinder()
     {
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
         var pos = obj.transform.localPosition;
-        pos.z = z;
+        pos.z = 0;
         obj.transform.localPosition = pos;
         obj.Name = $"g[{_cylinders.Count}]";
+        Resize();
+    }
+    public Cylinder AddNewCylinder(Saver.LogicalCylinder logicalCylinder)
+    {
+        var obj = Instantiate(_cylinder, transform);
+        _cylinders.Add(obj);
+        var pos = obj.transform.localPosition;
+        pos.z = logicalCylinder.Position;
+        obj.SetMass(logicalCylinder.Mass);
+        obj.transform.localPosition = pos;
+        obj.Name = logicalCylinder.Name;
         Resize();
         return obj;
     }
 
-    public DependedCylinder AddDependedCylinder(string formula)
+    public void AddDependedCylinder()
     {
         var obj = Instantiate(_dependedCylinder, transform);
         _cylinders.Add(obj);
-        obj.SetFormula(formula);
+        obj.SetFormula("0");
         obj.Name = $"w[{_cylinders.Count}]";
         Resize();
-        return obj;
     }
 
     public void Save()
     {
         List<Saver.LogicalCylinder> saveData = new List<Saver.LogicalCylinder>();
+        List<Saver.DependedLogicalCylinder> saveData2 = new List<Saver.DependedLogicalCylinder>();
         foreach(var c in _cylinders)
         {
-            if(c is DependedCylinder) continue;
-            
-            var lCyl = new Saver.LogicalCylinder();
-            lCyl.Position = c.transform.localPosition.z;
-            lCyl.Name = c.Name;
+            if (c is DependedCylinder)
+            {
+                var sav = new Saver.DependedLogicalCylinder
+                {
+                    Position = c.transform.localPosition.z,
+                    Name = c.Name,
+                    Formula = (c as DependedCylinder).GetFormula(),
+                    Mass = c.GetMass()
+                };
+                saveData2.Add(sav);
+                continue;
+            }
+            var lCyl = new Saver.LogicalCylinder
+            {
+                Position = c.transform.localPosition.z,
+                Name = c.Name,
+                Mass = c.GetMass()
+            };
             saveData.Add(lCyl);
         }
         Saver.Save(saveData);
+        Saver.Save(saveData2);
     }
     
         [ContextMenu("Random")]
@@ -117,7 +160,7 @@ public class Panel : MonoBehaviour
         for (var i = 0; i < count; i+=2)
         {
             AddNewCylinder();
-            AddDependedCylinder("2+g1");
+            AddDependedCylinder();
         }
         Resize();
     }
