@@ -92,6 +92,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "OpenCylMenu",
+                    "type": "Button",
+                    "id": "15c5a541-35b4-4484-9568-54ffa5f211e4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -103,6 +112,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "CylinderHandle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cf04f8ff-5593-48fa-ab6e-c7aba135fe36",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "MultiTap",
+                    "processors": "",
+                    "groups": "",
+                    "action": "OpenCylMenu",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

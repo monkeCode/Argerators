@@ -25,6 +25,7 @@ public class CameraMovement : MonoBehaviour
         _input.Camera.MoveState.performed += ctx => ChangeState(true);
         _input.Camera.MoveState.canceled += ctx => ChangeState(false);
         _input.Camera.PointerMove.performed += ctx => _currentMousePos = ctx.ReadValue<Vector2>();
+       
 
     }
 

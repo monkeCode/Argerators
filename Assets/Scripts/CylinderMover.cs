@@ -10,6 +10,7 @@ public class CylinderMover : MonoBehaviour
     private Vector3 _mousePos;
     private GameObject _plane;
     [SerializeField] private LayerMask _cylinderLayer;
+    [SerializeField] private LayerMask _depCylLayer;
     [SerializeField] private LayerMask _planeLayer;
     void Start()
     {
@@ -19,18 +20,33 @@ public class CylinderMover : MonoBehaviour
         _input.Input.CylinderHandle.performed += ctx => TakeCylinder();
         _input.Input.CylinderHandle.canceled += ctx => DropCylinder();
         _input.Camera.PointerMove.performed += ctx => MoveCylinder(ctx.ReadValue<Vector2>());
+        _input.Input.OpenCylMenu.performed += context => OpenCylMenu();
         
     }
 
+    private void OpenCylMenu()
+    {
+        var cyl = GetCylUnderMouse(_cylinderLayer | _depCylLayer );
+        if(cyl != null)
+            Menu.Instance.ShowMenu(cyl.GetComponent<Cylinder>());
+    }
+    
     private void DropCylinder() => _cylinder = null;
 
     private void TakeCylinder()
     {
+        _cylinder = GetCylUnderMouse(_cylinderLayer);
+    }
+
+    private GameObject GetCylUnderMouse(LayerMask layerMask)
+    {
         var ray = _camera.ScreenPointToRay(_mousePos);
-        if (Physics.Raycast(ray, out var hit, 100, _cylinderLayer) && hit.collider.TryGetComponent(out Cylinder cylinder))
+        if (Physics.Raycast(ray, out var hit, 100, layerMask) && hit.collider.TryGetComponent(out Cylinder _))
         {
-            _cylinder = hit.collider.gameObject;
+            return hit.collider.gameObject;
         }
+
+        return null;
     }
 
     private void MoveCylinder(Vector2 readValue)
