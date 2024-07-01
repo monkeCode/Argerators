@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-
     public static Menu Instance { get; private set; }
 
     [SerializeField] private GameObject _menu;
@@ -16,6 +15,7 @@ public class Menu : MonoBehaviour
     [SerializeField] private Scrollbar _posSl;
 
     private Cylinder _activeCylinder;
+
     private void Awake()
     {
         if (Instance == null)
@@ -28,15 +28,18 @@ public class Menu : MonoBehaviour
 
     public void ShowMenu(Cylinder cylinder)
     {
+        if (_menu.activeSelf)
+            return;
+
         _menu.SetActive(true);
         _activeCylinder = cylinder;
-        
+
         var isDep = _activeCylinder is DependedCylinder;
-        
-        _inputName.text = _activeCylinder.Name;
+
+        _inputName.text = _activeCylinder.name;
         _weightSl.value = _activeCylinder.GetMass();
-        _posSl.value = _activeCylinder.transform.localPosition.z / 5 + 0.5f;
-        
+        _posSl.value = _activeCylinder.transform.localPosition.z / 5/2 + 1f;
+
         foreach (var obj in _formulaObjects)
         {
             obj.SetActive(isDep);
@@ -44,20 +47,19 @@ public class Menu : MonoBehaviour
 
         if (isDep)
         {
-           _formula.text = ((DependedCylinder) _activeCylinder).GetFormula();
+            _formula.text = ((DependedCylinder)_activeCylinder).GetFormula();
         }
-        
-        
-        
+
     }
 
     public void SetWeight(float value)
     {
         _activeCylinder.SetMass(value);
     }
+
     public void SetPos(float value)
     {
-        _activeCylinder.SetPos(value-0.5f);
+        _activeCylinder.SetPos(value);
     }
 
     public void SetFormula(string formula)
@@ -72,9 +74,9 @@ public class Menu : MonoBehaviour
     {
         _menu.SetActive(false);
     }
-    
+
     public void SetName(string name)
     {
-        _activeCylinder.Name = name;
+        _activeCylinder.name = name;
     }
 }

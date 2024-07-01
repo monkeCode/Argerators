@@ -13,7 +13,7 @@ public class DependedCylinder : Cylinder
    {
       var position = transform.localPosition;
       var res = CalculateFormula(nameToPos);
-      res = Math.Clamp(res, -1, 1);
+      res = Math.Clamp(res, 0, 1)*2-1f;
       position.z = 5 * res;
       transform.localPosition = position;
    }

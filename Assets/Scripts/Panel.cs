@@ -7,12 +7,12 @@ using Random = UnityEngine.Random;
 public class Panel : MonoBehaviour
 {
 
-    [SerializeField][Range(-180,180)] private float _angle;
     [SerializeField] private Cylinder _cylinder;
     [SerializeField] private DependedCylinder _dependedCylinder;
     [SerializeField] private Transform _plane;
     [SerializeField] private float _maxAngleOffset = 23.20f;
 
+    private float _angle;
     private List<Cylinder> _cylinders = new();
     
     private void Update()
@@ -24,9 +24,8 @@ public class Panel : MonoBehaviour
             c.ChangePosition(dict);
         }
         
-        var angle = CalculateAngle();
-        angle = Math.Clamp(angle, -_maxAngleOffset, _maxAngleOffset);
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(angle,0,0),0.1f);
+        _angle = CalculateAngle();
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(_angle* _maxAngleOffset,0,0),0.1f);
     }
 
     private float CalculateAngle()
@@ -34,19 +33,14 @@ public class Panel : MonoBehaviour
         var angle = 0.0f;
         foreach (var cyl in _cylinders)
         {
-            angle += (cyl.transform.position.z - transform.position.z) * cyl.GetMass();
+            float dist = (cyl.transform.position.z - transform.position.z)/5;
+            angle += (dist) * cyl.GetMass();
         }
-        return angle;
-    }
-    
-    [ContextMenu("Angle")]
-    private void UpdateAngle()
-    {
-        transform.rotation = Quaternion.Euler(_angle,0,0);
+        return angle / (_cylinders.Count>0?_cylinders.Count:1);
     }
 
     private Dictionary<string, double> GetCylPositions()=> 
-        _cylinders.ToDictionary(cylinder => cylinder.Name, cylinder=> (double)cylinder.transform.localPosition.z/5);
+        _cylinders.ToDictionary(cylinder => cylinder.name, cylinder=> (double)cylinder.transform.localPosition.z/5/2 + 0.5f);
 
     private void Resize()
     {
@@ -84,7 +78,7 @@ public class Panel : MonoBehaviour
         var obj = Instantiate(_dependedCylinder, transform);
         _cylinders.Add(obj);
         obj.SetFormula(dependedLogicalCylinder.Formula);
-        obj.Name = dependedLogicalCylinder.Name;
+        obj.name = dependedLogicalCylinder.Name;
         obj.SetMass(dependedLogicalCylinder.Mass);
         Resize();
         return obj;
@@ -97,7 +91,7 @@ public class Panel : MonoBehaviour
         var pos = obj.transform.localPosition;
         pos.z = 0;
         obj.transform.localPosition = pos;
-        obj.Name = $"g[{_cylinders.Count}]";
+        obj.name = $"g[{_cylinders.Count}]";
         Resize();
     }
     public Cylinder AddNewCylinder(Saver.LogicalCylinder logicalCylinder)
@@ -108,7 +102,7 @@ public class Panel : MonoBehaviour
         pos.z = logicalCylinder.Position;
         obj.SetMass(logicalCylinder.Mass);
         obj.transform.localPosition = pos;
-        obj.Name = logicalCylinder.Name;
+        obj.name = logicalCylinder.Name;
         Resize();
         return obj;
     }
@@ -118,7 +112,7 @@ public class Panel : MonoBehaviour
         var obj = Instantiate(_dependedCylinder, transform);
         _cylinders.Add(obj);
         obj.SetFormula("0");
-        obj.Name = $"w[{_cylinders.Count}]";
+        obj.name = $"w[{_cylinders.Count}]";
         Resize();
     }
 
@@ -133,7 +127,7 @@ public class Panel : MonoBehaviour
                 var sav = new Saver.DependedLogicalCylinder
                 {
                     Position = c.transform.localPosition.z,
-                    Name = c.Name,
+                    Name = c.name,
                     Formula = (c as DependedCylinder).GetFormula(),
                     Mass = c.GetMass()
                 };
@@ -143,7 +137,7 @@ public class Panel : MonoBehaviour
             var lCyl = new Saver.LogicalCylinder
             {
                 Position = c.transform.localPosition.z,
-                Name = c.Name,
+                Name = c.name,
                 Mass = c.GetMass()
             };
             saveData.Add(lCyl);
@@ -174,9 +168,6 @@ public class Panel : MonoBehaviour
 
     public float GetAngle()
     {
-        var ang = transform.rotation.eulerAngles.x > 180
-            ? transform.rotation.eulerAngles.x - 360
-            : transform.rotation.eulerAngles.x;
-        return (ang+ _maxAngleOffset) / (2 * _maxAngleOffset);
-    } 
+        return (_angle+1)/2;
+    }
 }

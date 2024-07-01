@@ -19,7 +19,7 @@ public class Scale : MonoBehaviour
         transform.position = new Vector3(_mark.transform.position.x-1, transform.position.y, transform.position.z);
 
         var angle = _plane.GetAngle();
-        _showableText.text = angle.ToString();
+        _showableText.text = angle.ToString("F3");
         _textTransform.localPosition = new Vector3(_textTransform.localPosition.x, angle * 6 - 3, _textTransform.localPosition.z);
         
     }

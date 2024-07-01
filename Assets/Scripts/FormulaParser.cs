@@ -164,6 +164,7 @@ public class FunctionOperation : ICalculable
         {"sin", (param, a) => Math.Sin(a[0].Calculate(param))},
         {"cos", (param, a) => Math.Cos(a[0].Calculate(param))},
         {"tan", (param, a) => Math.Tan(a[0].Calculate(param))},
+        {"exp", (param, a) => Math.Exp(a[0].Calculate(param))},
         {"max", (param, a) => a.Select(it => it.Calculate(param)).Max()},
         {"min", (param, a) => a.Select(it => it.Calculate(param)).Min()},
     };
