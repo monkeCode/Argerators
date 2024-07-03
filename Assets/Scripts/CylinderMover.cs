@@ -8,7 +8,6 @@ public class CylinderMover : MonoBehaviour
     private InputSystem _input;
     private GameObject _cylinder;
     private Vector3 _mousePos;
-    private GameObject _plane;
     [SerializeField] private LayerMask _cylinderLayer;
     [SerializeField] private LayerMask _depCylLayer;
     [SerializeField] private LayerMask _planeLayer;
@@ -54,11 +53,24 @@ public class CylinderMover : MonoBehaviour
         _mousePos = readValue;
         if(_cylinder == null) return;
             var ray = _camera.ScreenPointToRay(_mousePos);
-            if (!Physics.Raycast(ray, out var hit, 100, _planeLayer)) return;
-            var position = _cylinder.transform.position;
+            var plane = Panel.Instance;
+            var normal = plane.transform.up;
+            var diff_point = ray.origin - plane.transform.position;
+            var proj = Vector3.Dot(diff_point, normal) * normal;
+            var new_point = ray.origin - proj;
+            var new_vector = ray.direction - Vector3.Dot(ray.direction, normal) * normal;
 
-            var newPos = new Vector3(position.x, hit.point.y+ hit.normal.y, hit.point.z);
-            _cylinder.transform.position = newPos;
+            var n = (_cylinder.transform.position.x - new_point.x) / new_vector.x;
+            var z = new_vector.z * n + new_point.z;
+
+            var position = _cylinder.transform.localPosition;
+            var newPos = new Vector3(position.x, position.y,  Mathf.Clamp(z - plane.transform.position.z, -5, 5));
+            _cylinder.transform.localPosition = newPos;
+
+            // Debug.Log($"{new_point}, {new_vector}");
+            // Debug.DrawRay(_plane.transform.position, new_vector*10, color:Color.blue);
+            // Debug.DrawRay(_plane.transform.position, _plane.transform.up, color:Color.red);
+            // Debug.DrawLine(new_point, _plane.transform.position, color:Color.green);
 
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -9,12 +10,15 @@ public class Panel : MonoBehaviour
 
     [SerializeField] private Cylinder _cylinder;
     [SerializeField] private DependedCylinder _dependedCylinder;
+
     [SerializeField] private Transform _plane;
     [SerializeField] private float _maxAngleOffset = 23.20f;
 
     private float _angle;
     private List<Cylinder> _cylinders = new();
-    
+
+    public static Panel Instance { get; private set; }
+
     private void Update()
     {
         var depCyls = _cylinders.OfType<DependedCylinder>().ToList();
@@ -40,7 +44,7 @@ public class Panel : MonoBehaviour
     }
 
     private Dictionary<string, double> GetCylPositions()=> 
-        _cylinders.ToDictionary(cylinder => cylinder.name, cylinder=> (double)cylinder.transform.localPosition.z/5/2 + 0.5f);
+        _cylinders.ToDictionary(cylinder => cylinder.name, cylinder=> cylinder.GetPos());
 
     private void Resize()
     {
@@ -57,6 +61,7 @@ public class Panel : MonoBehaviour
 
     private void Start()
     {
+        Instance = this;
         var data = Saver.Load();
         if(data == null) return;
 
@@ -86,6 +91,7 @@ public class Panel : MonoBehaviour
 
     public void AddNewCylinder()
     {
+        //TODO: needs normal name generation
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
         var pos = obj.transform.localPosition;
@@ -166,8 +172,17 @@ public class Panel : MonoBehaviour
         _cylinders.Clear();
     }
 
+    public void DeleteCyl(Cylinder cylinder)
+    {
+        _cylinders.Remove(cylinder);
+        Destroy(cylinder.gameObject);
+        Resize();
+    }
+
     public float GetAngle()
     {
         return (_angle+1)/2;
     }
+
+    public IReadOnlyList<Cylinder> GetCylinders() => _cylinders;
 }

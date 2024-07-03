@@ -53,7 +53,7 @@ public static class Saver
 
     public static List<LogicalCylinder> Load()
     {
-        var res = PlayerPrefs.GetString(_key);
+        var res = PlayerPrefs.GetString(_key, defaultValue:null);
         return res == null ? null :  JsonUtility.FromJson<Wrapper<LogicalCylinder>>(res).Items.ToList();
     }
 

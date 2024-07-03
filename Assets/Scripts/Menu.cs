@@ -37,8 +37,10 @@ public class Menu : MonoBehaviour
         var isDep = _activeCylinder is DependedCylinder;
 
         _inputName.text = _activeCylinder.name;
-        _weightSl.value = _activeCylinder.GetMass();
-        _posSl.value = _activeCylinder.transform.localPosition.z / 5/2 + 1f;
+        var w = _activeCylinder.GetMass();
+        var p = (float)_activeCylinder.GetPos();
+        _weightSl.value = w;
+        _posSl.value = p;
 
         foreach (var obj in _formulaObjects)
         {
@@ -78,5 +80,11 @@ public class Menu : MonoBehaviour
     public void SetName(string name)
     {
         _activeCylinder.name = name;
+    }
+
+    public void Delete()
+    {
+        Panel.Instance.DeleteCyl(_activeCylinder);
+        Close();
     }
 }
