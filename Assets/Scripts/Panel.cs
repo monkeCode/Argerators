@@ -37,10 +37,11 @@ public class Panel : MonoBehaviour
         var angle = 0.0f;
         foreach (var cyl in _cylinders)
         {
-            float dist = (cyl.transform.position.z - transform.position.z)/5;
+            float dist = (float)cyl.GetPos()*2-1f;
             angle += (dist) * cyl.GetMass();
         }
-        return angle / (_cylinders.Count>0?_cylinders.Count:1);
+        //return angle / (_cylinders.Count>0?_cylinders.Count:1);
+        return Mathf.Clamp(angle, -1, 1);
     }
 
     private Dictionary<string, double> GetCylPositions()=> 
@@ -94,9 +95,7 @@ public class Panel : MonoBehaviour
         //TODO: needs normal name generation
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
-        var pos = obj.transform.localPosition;
-        pos.z = 0;
-        obj.transform.localPosition = pos;
+        obj.SetPos(0.5);
         obj.name = $"g[{_cylinders.Count}]";
         Resize();
     }
@@ -104,10 +103,11 @@ public class Panel : MonoBehaviour
     {
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
-        var pos = obj.transform.localPosition;
-        pos.z = logicalCylinder.Position;
+        //var pos = obj.transform.localPosition;
+        //pos.z = logicalCylinder.Position;
         obj.SetMass(logicalCylinder.Mass);
-        obj.transform.localPosition = pos;
+        obj.SetPos(logicalCylinder.Position);
+        //obj.transform.localPosition = pos;
         obj.name = logicalCylinder.Name;
         Resize();
         return obj;
@@ -132,7 +132,7 @@ public class Panel : MonoBehaviour
             {
                 var sav = new Saver.DependedLogicalCylinder
                 {
-                    Position = c.transform.localPosition.z,
+                    Position = c.GetPos(),
                     Name = c.name,
                     Formula = (c as DependedCylinder).GetFormula(),
                     Mass = c.GetMass()
@@ -142,7 +142,7 @@ public class Panel : MonoBehaviour
             }
             var lCyl = new Saver.LogicalCylinder
             {
-                Position = c.transform.localPosition.z,
+                Position = c.GetPos(),
                 Name = c.name,
                 Mass = c.GetMass()
             };

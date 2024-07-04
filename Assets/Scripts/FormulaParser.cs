@@ -38,7 +38,7 @@ public static class FormulaParser
             var match = functionRegex.Match(expression);
             if(match.Value == expression)
             {
-                var args = match.Groups["args"].Value.Split(";").Select(it => CreateFunc(it)).ToArray();
+                var args = match.Groups["args"].Value.Split(",").Select(it => CreateFunc(it)).ToArray();
                 return new FunctionOperation(match.Groups["func"].Value, args);
             }
         }
@@ -70,7 +70,7 @@ public static class FormulaParser
         {
             return CreateOp("^", expression, functions);
         }
-        if(double.TryParse(expression, out double res))
+        if(double.TryParse(expression.Replace(".",","), out double res))
         {
             return new ConstOperand(res);
         }

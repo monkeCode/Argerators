@@ -11,7 +11,7 @@ public static class Saver
     [Serializable]
     public class LogicalCylinder
     {
-        public float Position;
+        public double Position;
         public string Name;
         public float Mass;
     }

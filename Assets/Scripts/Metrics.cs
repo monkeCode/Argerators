@@ -40,6 +40,16 @@ public class Metrics : MonoBehaviour
             new Vector3(_textTransform.localPosition.x, angle * 6 - 3, _textTransform.localPosition.z);
     }
 
+    private float GetGCD(float conj, float disj) =>
+        (RadioSelector.Instanse.value) switch
+        {
+            "Arithmetic mean" => (conj + disj) / 2,
+            "Geometric mean" => Mathf.Sqrt(conj*disj),
+            "Max" => disj,
+            "Min" => conj
+
+        };
+
     private void UpdateGCD()
     {
         var positions = Panel.Instance.GetCylinders().Select(it=> (float)it.GetPos());
@@ -48,9 +58,8 @@ public class Metrics : MonoBehaviour
 
         var conj = positions.Min();
         var disj = positions.Max();
-       // var gcd = (conj + disj) / 2;
-       var gcd = Mathf.Sqrt(conj*disj);
-        var dist = disj-conj;
+        var dist = (disj - conj);
+        var gcd = GetGCD(conj, disj);
 
         conjuction.position =
             new Vector3(conjuction.position.x, (max.position.y - min.position.y) * conj + min.position.y, conjuction.position.z);
