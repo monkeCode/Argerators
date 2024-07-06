@@ -6,33 +6,65 @@ using System.Text.RegularExpressions;
 
 public static class FormulaParser
 {
-    private static Regex minusRegex = new Regex("(?<![-+\\^/\\*])-(?![-+\\^/\\*])");
+    private static Regex minusRegex = new Regex(@"(?<![-+\^/\*])-(?![-+\^/\*])");
 
-    private static Regex functionRegex = new Regex("(?<func>\\w*)\\((?<args>.*?)\\)");
+    private static Regex functionRegex = new Regex("(?<func>\\w*)\\((?<args>.*)\\)");
 
-    private static Regex branchesRegex = new Regex("^-?\\(.*?\\)$");
+    private static Regex opsRegex = new Regex(@"[-+*\\()]");
 
     public static ICalculable CreateFunc(string expression)
     {
         List<(string, string)> functionReplacement = new List<(string, string)>();
         StringBuilder builder = new StringBuilder(expression);
-        foreach(var x in functionRegex.Matches(expression).ToList())
-        {
-            if (x.Value == expression) break;
-            var replacement = x.Groups["args"].Value.Replace("(","").Replace(")","") +"param"+ x.Groups["func"].Value;
-            functionReplacement.Add((replacement, x.Value));
-            builder.Replace(x.Value, replacement);
-        }
         List<(string repl, ICalculable)> functions = new List<(string repl, ICalculable)>();
+
+        while (builder.ToString().Contains("(") && builder.ToString().Contains(")"))
+        {
+            var s = builder.ToString();
+            int startI = s.IndexOf("(");
+            int endI = 0;
+            int count = 1;
+            for (int i = startI+1; i < s.Length; i++)
+            {
+                if (s[i] == '(')
+                {
+                    //startI = i;
+                    count += 1;
+                }
+
+                if (s[i] != ')') continue;
+                count--;
+                if (count != 0) continue;
+                endI = i;
+                break;
+            }
+
+            if (endI <= startI)
+                throw new ArgumentException();
+            while (startI > 0 && char.IsLetter(s[startI - 1]))
+                startI--;
+
+            var match = functionRegex.Match(s.Substring(startI, endI+1- startI));
+            if (!match.Success)
+                throw new ArgumentException();
+
+            if (match.Value == expression) break;
+            var func = match.Groups["func"].Value;
+            func = func.Length > 0 ? func : "brackets";
+                var replacement = opsRegex.Replace(match.Groups["args"].Value, "") +"param"+ func;
+                functionReplacement.Add((replacement, match.Value));
+                builder.Replace(match.Value, replacement);
+        }
+
         foreach(var f in functionReplacement)
         {
             functions.Add((f.Item1, CreateFunc(f.Item2)));
         }
-        return CreateLambda(builder.ToString(),functions);
+
+        return CreateLambda(builder.ToString(), functions);
     }
     private static ICalculable CreateLambda(string expression, List<(string repl, ICalculable)> functions)
     {
-        
         if(functionRegex.IsMatch(expression))
         {
             var match = functionRegex.Match(expression);
@@ -82,7 +114,6 @@ public static class FormulaParser
         }
 
         return new VariableOperand(expression);
-
     }
 
     private static ICalculable CreateOp(string op, string expression, List<(string repl, ICalculable)> functions)
@@ -165,8 +196,10 @@ public class FunctionOperation : ICalculable
         {"cos", (param, a) => Math.Cos(a[0].Calculate(param))},
         {"tan", (param, a) => Math.Tan(a[0].Calculate(param))},
         {"exp", (param, a) => Math.Exp(a[0].Calculate(param))},
+        {"sqrt", (param, a) => Math.Sqrt(a[0].Calculate(param))},
         {"max", (param, a) => a.Select(it => it.Calculate(param)).Max()},
         {"min", (param, a) => a.Select(it => it.Calculate(param)).Min()},
+        {"", (param, a) => a[0].Calculate(param)}
     };
 
     private ICalculable[] _calculables;
