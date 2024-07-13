@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,21 @@ public class Metrics : MonoBehaviour
 
     [SerializeField] private Transform _mark;
 
-    [Header("GCD and other")]
+    [Header("horizontal bar")]
     [SerializeField] private Transform max;
     [SerializeField] private Transform min;
     [SerializeField] private Transform conjuction;
     [SerializeField] private Transform disjuction;
+    [SerializeField] private TextMeshProUGUI maxTextBar;
+    [SerializeField] private TextMeshProUGUI minTextBar;
+    [SerializeField] private TextMeshProUGUI gcdTextBar;
+    [Header("metrics")]
     [SerializeField] private Transform gcd;
     [SerializeField] private TextMeshProUGUI ornessText;
     [SerializeField] private TextMeshProUGUI andnessText;
     [SerializeField] private TextMeshProUGUI gcdText;
+
+    private float _barTollerance = 0.01f;
     // Update is called once per frame
     void Update()
     {
@@ -46,7 +53,8 @@ public class Metrics : MonoBehaviour
             "Arithmetic mean" => (conj + disj) / 2,
             "Geometric mean" => Mathf.Sqrt(conj*disj),
             "Max" => disj,
-            "Min" => conj
+            "Min" => conj,
+            "Simulation" => Panel.Instance.GetAngle()
 
         };
 
@@ -63,11 +71,52 @@ public class Metrics : MonoBehaviour
 
         conjuction.position =
             new Vector3(conjuction.position.x, (max.position.y - min.position.y) * conj + min.position.y, conjuction.position.z);
+
+        minTextBar.transform.position = new Vector3(minTextBar.transform.position.x,
+            (max.position.y - min.position.y) * conj + min.position.y, minTextBar.transform.position.z);
+
         disjuction.position =
             new Vector3(disjuction.position.x, (max.position.y - min.position.y) * disj + min.position.y,
                 disjuction.position.z);
+
+        maxTextBar.transform.position = new Vector3(maxTextBar.transform.position.x,
+            (max.position.y - min.position.y) * disj + min.position.y, maxTextBar.transform.position.z);
+
         this.gcd.position =
             new Vector3(this.gcd.position.x, (max.position.y - min.position.y) * gcd + min.position.y, this.gcd.position.z);
+        gcdTextBar.transform.position = new Vector3(gcdTextBar.transform.position.x,
+            (max.position.y - min.position.y) * gcd + min.position.y, gcdTextBar.transform.position.z);
+
+        if (MathF.Abs(gcd - disj) < _barTollerance && MathF.Abs(gcd - conj) < _barTollerance)
+        {
+            gcdTextBar.text = "gcd, max, min: " + gcd.ToString("F3");
+            maxTextBar.text = "";
+            minTextBar.text = "";
+        }
+        else if (MathF.Abs(gcd - disj) < _barTollerance)
+        {
+            gcdTextBar.text = "gcd, max: " + gcd.ToString("F3");
+            maxTextBar.text = "";
+            minTextBar.text = "min: " + conj.ToString("F3");
+        }
+        else if (MathF.Abs(gcd - conj) < _barTollerance)
+        {
+            gcdTextBar.text = "gcd, min: " + gcd.ToString("F3");
+            maxTextBar.text = "max: " + disj.ToString("F3");
+            minTextBar.text = "";
+        }
+        else if (MathF.Abs(disj - conj) < _barTollerance)
+        {
+            gcdTextBar.text = "gcd: " + gcd.ToString("F3");
+            maxTextBar.text = "max, min: " + conj.ToString("F3");
+            minTextBar.text = "";
+        }
+        else
+        {
+            maxTextBar.text = "max: " + disj.ToString("F3");
+            gcdTextBar.text = "gcd: " + gcd.ToString("F3");
+            minTextBar.text = "min: " + conj.ToString("F3");
+        }
 
         gcdText.text = "GCD◊:\n" + gcd.ToString("F3");
         ornessText.text = "Andness:\n" +  ((disj-gcd)/dist).ToString("F3");

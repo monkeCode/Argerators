@@ -18,7 +18,7 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void SetMass(float m)
     {
         mass = m;
-        mesh.transform.localScale = new Vector3(mesh.transform.localScale.x, Math.Clamp(mass, 0.01f, 2f), mesh.transform.localScale.z);
+        mesh.transform.localScale = new Vector3(mesh.transform.localScale.x, Math.Clamp(mass, 0.1f, 2f), mesh.transform.localScale.z);
         mesh.transform.localPosition = new Vector3(mesh.transform.localPosition.x, mass-1, mesh.transform.localPosition.z);
     } 
 

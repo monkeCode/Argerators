@@ -1094,6 +1094,39 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+--- !u!114 &2900229107167937493 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5228566720065388398, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+  m_PrefabInstance: {fileID: 2900229107167937492}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2900229107167937494 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 302815522915905211, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+  m_PrefabInstance: {fileID: 2900229107167937492}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2900229107167937495 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3169693371480710465, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+  m_PrefabInstance: {fileID: 2900229107167937492}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!33 &3151500483238116708
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1617,6 +1650,18 @@ PrefabInstance:
       propertyPath: disjuction
       value: 
       objectReference: {fileID: 505690947}
+    - target: {fileID: 8485974182371677863, guid: cd2faf5c3efd2604bafa4c6996a256b1, type: 3}
+      propertyPath: gcdTextBar
+      value: 
+      objectReference: {fileID: 2900229107167937493}
+    - target: {fileID: 8485974182371677863, guid: cd2faf5c3efd2604bafa4c6996a256b1, type: 3}
+      propertyPath: maxTextBar
+      value: 
+      objectReference: {fileID: 2900229107167937495}
+    - target: {fileID: 8485974182371677863, guid: cd2faf5c3efd2604bafa4c6996a256b1, type: 3}
+      propertyPath: minTextBar
+      value: 
+      objectReference: {fileID: 2900229107167937494}
     - target: {fileID: 8485974182371677863, guid: cd2faf5c3efd2604bafa4c6996a256b1, type: 3}
       propertyPath: ornessText
       value: 
