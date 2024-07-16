@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -16,7 +17,6 @@ public class Panel : MonoBehaviour
 
     private float _angle;
     private List<Cylinder> _cylinders = new();
-
     public static Panel Instance { get; private set; }
 
     private void Update()
@@ -64,7 +64,11 @@ public class Panel : MonoBehaviour
     {
         Instance = this;
         var data = Saver.Load();
-        if(data == null) return;
+        if (data == null)
+        {
+            LoadDefault();
+            return;
+        }
 
         foreach (var cyl in data)
         {
@@ -90,14 +94,52 @@ public class Panel : MonoBehaviour
         return obj;
     }
 
-    public void AddNewCylinder()
+    private int GetIndex()
+    {
+        int max = -1;
+            foreach (var c in _cylinders)
+            {
+                var match = Regex.Match(c.name, @"^[gw]\[(\d*)\]$");
+                if (match.Success)
+                {
+                    if (int.TryParse(match.Groups[1].Value, out int val))
+                        max = (max < val ? val : max);
+                }
+            }
+
+            return max+1;
+    }
+    private String GetNewPrimaryName()
+    {
+        var index = GetIndex();
+        return $"g[{index}]";
+    }
+
+    private String GetNewDependedName()
+    {
+        var index = GetIndex();
+        return $"w[{index}]";
+    }
+
+    public Cylinder AddNewCylinder()
     {
         //TODO: needs normal name generation
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
         obj.SetPos(0.5);
-        obj.name = $"g[{_cylinders.Count}]";
+        obj.name = GetNewPrimaryName();
         Resize();
+        return obj;
+    }
+
+    public void AddNewCylinderButton()
+    {
+        AddNewCylinder();
+    }
+
+    public void AddNewDependentCylinderButton()
+    {
+        AddDependedCylinder();
     }
     public Cylinder AddNewCylinder(Saver.LogicalCylinder logicalCylinder)
     {
@@ -113,13 +155,14 @@ public class Panel : MonoBehaviour
         return obj;
     }
 
-    public void AddDependedCylinder()
+    public DependedCylinder AddDependedCylinder()
     {
         var obj = Instantiate(_dependedCylinder, transform);
         _cylinders.Add(obj);
         obj.SetFormula("0");
-        obj.name = $"w[{_cylinders.Count}]";
+        obj.name = GetNewDependedName();
         Resize();
+        return obj;
     }
 
     public void Save()
@@ -185,4 +228,14 @@ public class Panel : MonoBehaviour
     }
 
     public IReadOnlyList<Cylinder> GetCylinders() => _cylinders;
+
+    private void LoadDefault()
+    {
+        var cyl1 = AddNewCylinder();
+        var cyl2 = AddNewCylinder();
+        var cyl3 = AddDependedCylinder();
+        cyl1.SetMass(0);
+        cyl2.SetMass(0);
+        cyl3.SetFormula($"min({cyl1.name},{cyl2.name})");
+    }
 }

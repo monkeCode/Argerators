@@ -1077,6 +1077,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 941054034}
+    - target: {fileID: 5801424617970076157, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: AddNewDependentCylinderButton
+      objectReference: {fileID: 0}
     - target: {fileID: 6421087832621460774, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1089,6 +1093,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 941054034}
+    - target: {fileID: 8173929264330448107, guid: cd3aad716aa76dd4dac339484b1970c0, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: AddNewCylinderButton
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
