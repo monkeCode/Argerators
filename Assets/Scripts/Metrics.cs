@@ -47,20 +47,36 @@ public class Metrics : MonoBehaviour
             new Vector3(_textTransform.localPosition.x, angle * 6 - 3, _textTransform.localPosition.z);
     }
 
-    private float GetGCD(float conj, float disj) =>
+    private static float GetGCD(float conj, float disj) =>
         (RadioSelector.Instanse.value) switch
         {
             "Arithmetic mean" => (conj + disj) / 2,
             "Geometric mean" => Mathf.Sqrt(conj*disj),
             "Max" => disj,
             "Min" => conj,
-            "Simulation" => Panel.Instance.GetAngle()
-
+            "Simulation" => Panel.Instance.GetAngle(),
+            _ => throw new ArgumentOutOfRangeException()
         };
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns>
+    /// Touple of max, min, gcd
+    /// </returns>
+    public  static (float,float,float) GetMetrics()
+    {
+        var positions = Panel.Instance.GetCylinders().Where(it => it is not DependedCylinder).Select(it=> (float)it.GetPos()).ToList();
+
+        var conj = positions.Min();
+        var disj = positions.Max();
+        var gcd = GetGCD(conj, disj);
+        return (disj, conj, gcd);
+    }
 
     private void UpdateGCD()
     {
-        var positions = Panel.Instance.GetCylinders().Select(it=> (float)it.GetPos());
+        var positions = Panel.Instance.GetCylinders().Where(it => it is not DependedCylinder).Select(it=> (float)it.GetPos()).ToList();
         if (positions.Count() < 2)
             return;
 
