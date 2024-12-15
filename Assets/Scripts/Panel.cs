@@ -37,11 +37,13 @@ public class Panel : MonoBehaviour
         var angle = 0.0f;
         foreach (var cyl in _cylinders)
         {
-            float dist = (float)cyl.GetPos()*2-1f;
+            //float dist = (float)cyl.GetPos() * 2 -1;
+            float dist = (float)cyl.GetPos();
             angle += (dist) * cyl.GetMass();
         }
         //return angle / (_cylinders.Count>0?_cylinders.Count:1);
-        return Mathf.Clamp(angle, -1, 1);
+        //return Mathf.Clamp(angle, -1, 1);
+        return Mathf.Clamp(angle, 0, 1);
     }
 
     private Dictionary<string, double> GetCylPositions()=> 
@@ -224,7 +226,8 @@ public class Panel : MonoBehaviour
 
     public float GetAngle()
     {
-        return (_angle+1)/2;
+        //return (_angle+1)/2;
+        return (_angle);
     }
 
     public IReadOnlyList<Cylinder> GetCylinders() => _cylinders;
