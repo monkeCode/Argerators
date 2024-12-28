@@ -10,6 +10,8 @@ public class Menu : MonoBehaviour
     [SerializeField] private GameObject[] _formulaObjects;
 
     [SerializeField] private TMP_InputField _inputName;
+    [SerializeField] private TMP_InputField _inputWeight;
+    [SerializeField] private TMP_InputField _inputPos;
     [SerializeField] private TMP_InputField _formula;
     [SerializeField] private Scrollbar _weightSl;
     [SerializeField] private Scrollbar _posSl;
@@ -39,6 +41,8 @@ public class Menu : MonoBehaviour
         _inputName.text = _activeCylinder.name;
         var w = _activeCylinder.GetMass();
         var p = (float)_activeCylinder.GetPos();
+        _inputWeight.text = w.ToString();
+        _inputPos.text = p.ToString();
         _weightSl.value = w;
         _posSl.value = p;
 
@@ -53,15 +57,29 @@ public class Menu : MonoBehaviour
         }
 
     }
+    
+    public void ValuesChanged()
+    {
+        if(float.TryParse(_inputPos.text, out float f))
+        {
+            SetPos(f);
+        }
+        if(float.TryParse(_inputWeight.text, out float f1))
+        {
+            SetWeight(f1);
+        }
+    }
 
     public void SetWeight(float value)
     {
         _activeCylinder.SetMass(value);
+        _inputWeight.text = value.ToString();
     }
 
     public void SetPos(float value)
     {
         _activeCylinder.SetPos(value);
+        _inputPos.text = value.ToString();
     }
 
     public void SetFormula(string formula)

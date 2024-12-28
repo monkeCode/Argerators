@@ -15,6 +15,8 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] protected GameObject mesh;
     public string name;
     public float GetMass() => mass;
+
+    private bool _mouseEntered = false;
     public void SetMass(float m)
     {
         mass = m;
@@ -30,13 +32,21 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     }
 
+    private void Start()
+    {
+        text.gameObject.SetActive(true);
+    }
     private void Update()
     {
-        if (text.gameObject.activeSelf)
+        if (_mouseEntered)
         {
-            text.text = $"{name}\n{GetMass().ToString("F3")}\n{GetPos().ToString("F3")}";
-            text.transform.rotation = Camera.main.transform.rotation;
+            text.text = $"{name}\nw {GetMass().ToString("F3")}\nz {GetPos().ToString("F3")}";
         }
+        else
+        {
+            text.text = $"{name}";
+        }
+        text.transform.rotation = Camera.main.transform.rotation;
     }
     public double GetPos()
     {
@@ -47,12 +57,14 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private void ShowText()
     {
-        text.gameObject.SetActive(true);
+        //text.gameObject.SetActive(true);
+        _mouseEntered = true;
     }
 
     private void HideText()
     {
-        text.gameObject.SetActive(false);
+        //text.gameObject.SetActive(false);
+        _mouseEntered = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
