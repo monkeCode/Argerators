@@ -1,6 +1,8 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
 
 public class Menu : MonoBehaviour
 {
@@ -60,13 +62,13 @@ public class Menu : MonoBehaviour
     
     public void ValuesChanged()
     {
-        if(float.TryParse(_inputPos.text, out float f))
+        if(float.TryParse(_inputPos.text.Replace(".", ","), out float f))
         {
-            SetPos(f);
+            _activeCylinder.SetPos(f);
         }
-        if(float.TryParse(_inputWeight.text, out float f1))
+        if(float.TryParse(_inputWeight.text.Replace(".", ","), out float f1))
         {
-            SetWeight(f1);
+            _activeCylinder.SetMass(f1);
         }
     }
 
@@ -100,6 +102,11 @@ public class Menu : MonoBehaviour
         _activeCylinder.name = name;
     }
 
+    public void SetColor(string col)
+    {
+        if (ColorUtility.TryParseHtmlString(col, out Color newCol))
+            _activeCylinder.SetColor(newCol);
+    }
     public void Delete()
     {
         Panel.Instance.DeleteCyl(_activeCylinder);

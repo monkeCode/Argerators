@@ -7,7 +7,7 @@ using UnityEngine;
 public class DependedCylinder : Cylinder
 {
    [SerializeField] private string _formula;
-
+   [SerializeField] private Renderer _renderer;
    private ICalculable _function;
    public void ChangePosition(Dictionary<string, double> nameToPos)
    {
@@ -33,4 +33,14 @@ public class DependedCylinder : Cylinder
    }
    
    public string GetFormula() => _formula;
+
+   public override void SetColor(Color color)
+    {
+        _renderer.material.SetColor("_Color", color);
+    }
+
+    public override Color GetColor()
+    {
+        return _renderer.material.GetColor("_Color");
+    }
 }

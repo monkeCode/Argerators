@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -19,15 +20,16 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     private bool _mouseEntered = false;
     public void SetMass(float m)
     {
+        m = Mathf.Clamp(m, 0,1);
         mass = m;
         mesh.transform.localScale = new Vector3(mesh.transform.localScale.x, Math.Clamp(mass, 0.1f, 2f), mesh.transform.localScale.z);
         mesh.transform.localPosition = new Vector3(mesh.transform.localPosition.x, mass-1, mesh.transform.localPosition.z);
     } 
 
-    public void SetPos(Double pos)
+    public void SetPos(double pos)
     {
         var p = transform.localPosition;
-        p.z = (float)(2*pos-1) * 5;
+        p.z = (float)Math.Clamp(pos, -1,1) * 5;
         transform.localPosition = p;
 
     }
@@ -75,5 +77,15 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void OnPointerExit(PointerEventData eventData)
     {
         HideText();
+    }
+
+    public virtual void SetColor(Color color)
+    {
+        mesh.GetComponent<Renderer>().material.SetColor("_Color", color);
+    }
+
+    public virtual Color GetColor()
+    {
+        return mesh.GetComponent<Renderer>().material.GetColor("_Color");
     }
 }

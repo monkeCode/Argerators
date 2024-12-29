@@ -92,6 +92,7 @@ public class Panel : MonoBehaviour
         obj.SetFormula(dependedLogicalCylinder.Formula);
         obj.name = dependedLogicalCylinder.Name;
         obj.SetMass(dependedLogicalCylinder.Mass);
+        obj.SetColor(dependedLogicalCylinder.color);
         Resize();
         return obj;
     }
@@ -153,6 +154,7 @@ public class Panel : MonoBehaviour
         obj.SetPos(logicalCylinder.Position);
         //obj.transform.localPosition = pos;
         obj.name = logicalCylinder.Name;
+        obj.SetColor(logicalCylinder.color);
         Resize();
         return obj;
     }
@@ -180,7 +182,8 @@ public class Panel : MonoBehaviour
                     Position = c.GetPos(),
                     Name = c.name,
                     Formula = (c as DependedCylinder).GetFormula(),
-                    Mass = c.GetMass()
+                    Mass = c.GetMass(),
+                    color = c.GetColor()
                 };
                 saveData2.Add(sav);
                 continue;
@@ -189,7 +192,8 @@ public class Panel : MonoBehaviour
             {
                 Position = c.GetPos(),
                 Name = c.name,
-                Mass = c.GetMass()
+                Mass = c.GetMass(),
+                color = c.GetColor()
             };
             saveData.Add(lCyl);
         }

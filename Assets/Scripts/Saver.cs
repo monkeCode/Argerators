@@ -14,6 +14,8 @@ public static class Saver
         public double Position;
         public string Name;
         public float Mass;
+
+        public Color color;
     }
     [Serializable]
     public class DependedLogicalCylinder: LogicalCylinder
