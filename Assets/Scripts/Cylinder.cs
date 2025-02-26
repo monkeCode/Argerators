@@ -29,7 +29,7 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void SetPos(double pos)
     {
         var p = transform.localPosition;
-        p.z = (float)Math.Clamp(pos, -1,1) * 5;
+        p.z = -(float)Math.Clamp(pos, -1,1) * 5;
         transform.localPosition = p;
 
     }
@@ -53,7 +53,7 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public double GetPos()
     {
         //return transform.localPosition.z / 10 + 0.5;
-        return transform.localPosition.z / 5;
+        return -transform.localPosition.z / 5;
     }
 
 

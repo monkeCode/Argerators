@@ -29,7 +29,7 @@ public class Panel : MonoBehaviour
         }
         
         _angle = CalculateAngle();
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(_angle* _maxAngleOffset,0,0),0.1f);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-_angle* _maxAngleOffset,0,0),0.1f);
     }
 
     private float CalculateAngle()
@@ -129,7 +129,7 @@ public class Panel : MonoBehaviour
         //TODO: needs normal name generation
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
-        obj.SetPos(0.5);
+        obj.SetPos(0);
         obj.name = GetNewPrimaryName();
         Resize();
         return obj;

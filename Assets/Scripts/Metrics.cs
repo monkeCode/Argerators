@@ -44,7 +44,7 @@ public class Metrics : MonoBehaviour
         var angle = Panel.Instance.GetAngle();
         _showableText.text = angle.ToString("F3");
         _textTransform.localPosition =
-            new Vector3(_textTransform.localPosition.x, angle * 3, _textTransform.localPosition.z);
+            new Vector3(_textTransform.localPosition.x, -angle * 3, _textTransform.localPosition.z);
     }
 
     private static float GetGCD(float conj, float disj) =>
