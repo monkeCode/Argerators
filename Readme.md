@@ -71,16 +71,18 @@
 ![alt text](Docs/scale.png) \
  Справа в рабочей области представлена проекционная шкала, которая отображает на себе:
 
-- элемент *дизъюнкции* ($max(y_1, \dots, y_n)$), отмеченный как **max**
-- элемент *конъюнкции* ($min(y_1, \dots, y_n)$), отмеченный как **min**
+- элемент *дизъюнкции* ( $max(y_1, \dots, y_n)$ ), отмеченный как **max**
+- элемент *конъюнкции* ( $min(y_1, \dots, y_n)$ ), отмеченный как **min**
 - *GCD*, рассчитанный исходя из выбранной формы.
 
 ## Рассчет угла
 
 Рассчет угла происходит согласно формуле:
+
 $$
- angle = \sum_{i=1}^n y_i \cdot w_i + \sum_{i=1}^n f_i(y_1,\dots,y_n) \cdot g_i
+angle = \sum_{i=1}^n y_i \cdot w_i + \sum_{i=1}^n f_i(y_1,\dots,y_n) \cdot g_i
 $$
+
 Данный угол подвергается обрезанию (clamping) до диапазона $[0,1]$ для дальнейшей обработки.
 
 ## Рассчет метрик
@@ -88,9 +90,15 @@ $$
 Метрики *Andness* и *Orness* задаются следующими выражениями:
 
 $$
-A = \vee x_1 \vee \dots \vee x_n - GCD\\[5px]
-B = GCD - \wedge x_1 \wedge \dots \wedge x_n\\[5px]
-\text{Andness} = \frac{A}{A+B}\\[5px]
+A = \vee x_1 \vee \dots \vee x_n - GCD
+$$
+$$
+B = GCD - \wedge x_1 \wedge \dots \wedge x_n
+$$
+$$
+\text{Andness} = \frac{A}{A+B}
+$$
+$$
 \text{Orness} = \frac{B}{A+B}
 $$
 
