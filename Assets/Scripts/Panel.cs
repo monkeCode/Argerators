@@ -37,12 +37,9 @@ public class Panel : MonoBehaviour
         var angle = 0.0f;
         foreach (var cyl in _cylinders)
         {
-            //float dist = (float)cyl.GetPos() * 2 -1;
             float dist = (float)cyl.GetPos();
             angle += (dist) * cyl.GetMass();
         }
-        //return angle / (_cylinders.Count>0?_cylinders.Count:1);
-        //return Mathf.Clamp(angle, -1, 1);
         return Mathf.Clamp(angle, 0, 1);
     }
 
@@ -102,7 +99,7 @@ public class Panel : MonoBehaviour
         int max = -1;
             foreach (var c in _cylinders)
             {
-                var match = Regex.Match(c.name, @"^[gw]\[(\d*)\]$");
+                var match = Regex.Match(c.name, @"^\w*?\[(\d*)\]$");
                 if (match.Success)
                 {
                     if (int.TryParse(match.Groups[1].Value, out int val))
@@ -115,18 +112,17 @@ public class Panel : MonoBehaviour
     private String GetNewPrimaryName()
     {
         var index = GetIndex();
-        return $"g[{index}]";
+        return $"Y[{index}]";
     }
 
     private String GetNewDependedName()
     {
         var index = GetIndex();
-        return $"w[{index}]";
+        return $"G[{index}]";
     }
 
     public Cylinder AddNewCylinder()
     {
-        //TODO: needs normal name generation
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
         obj.SetPos(0);
