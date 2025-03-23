@@ -124,7 +124,7 @@ $$
 |Умножение| Бинарная| L * R| $0.35*Y[4]$|
 |Деление| Бинарная| L / R| $Y[4]/2$|
 |Унарный минус| Унарная| - R| $-Y[2]$|
-|Возведение в степень| Бинарная| L^R| $1$^$Y[1]$|
+|Возведение в степень| Бинарная| L^R| $1$ ^ $Y[1]$|
 
 > [!important] Важно
 >
@@ -174,7 +174,6 @@ $$
 
 ### Расчет угла
 Рассчет угла реализован в методе **CalculateAngle**
-
 ```csharp
 private float CalculateAngle()
     {
@@ -186,8 +185,11 @@ private float CalculateAngle()
         }
         return Mathf.Clamp(angle, 0, 1);
     }
+
 ```
-Для добавления цилиндров реализованы методы **AddNewCylinder()** и **AddDependedCylinder()**, а также их перегруженные параметризованные версии **AddNewCylinder(Saver.LogicalCylinder logicalCylinder)** и **AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)**
+Данный угол принимает значения в диапазоне $[0,1]$ Для правильного наклона используется коэффициент `float _maxAngleOffset` и обновляется во встроенной в Unity функции `Update()`
+
+Для добавления цилиндров реализованы методы `AddNewCylinder()` и `AddDependedCylinder()`, а также их перегруженные параметризованные версии `AddNewCylinder(Saver.LogicalCylinder logicalCylinder)` и `AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)`, используемые при загрузке/выгрузке состояния.
 
 ```csharp
     public Cylinder AddNewCylinder()
