@@ -1,0 +1,44 @@
+@startuml PanelAdd
+title Добавление цилиндров
+
+actor User
+participant "UI" as UI
+participant "Panel" as Panel
+participant "Cylinder" as Cylinder
+
+activate UI 
+User -> UI: Add primary
+activate Panel
+UI -> Panel: AddNewCylinderButton
+
+create Cylinder
+Panel -> Cylinder: Instantiate
+activate Cylinder
+Panel -> Panel: Добавить цилиндр в список
+Panel -> Cylinder: SetPos(0)
+Panel -> Cylinder: name = GetNewPrimaryName()
+deactivate Cylinder
+
+Panel -> Panel: Resize
+Panel --> User: Цилиндр добавлен
+deactivate Panel
+
+
+@enduml
+
+@startuml PanelStart
+title Запуск приложения
+
+actor User
+participant "Panel" as Panel
+participant "Saver" as Saver
+
+User -> Panel: Запуск приложения
+activate Panel
+Panel -> Saver:Load()
+activate Saver
+Saver --> Panel:data
+deactivate Saver
+Panel -> Panel: Установка цилиндров
+deactivate Panel
+@enduml

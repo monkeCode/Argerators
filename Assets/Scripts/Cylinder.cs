@@ -52,7 +52,6 @@ public class Cylinder : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     }
     public double GetPos()
     {
-        //return transform.localPosition.z / 10 + 0.5;
         return -transform.localPosition.z / 5;
     }
 

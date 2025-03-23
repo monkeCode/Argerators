@@ -54,6 +54,7 @@ public class Panel : MonoBehaviour
 
     private void Start()
     {
+        // Singletone implementation 
         Instance = this;
         var data = Saver.Load();
         if (data == null)

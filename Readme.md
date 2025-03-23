@@ -104,9 +104,12 @@ $$
 
 И напрямую зависят от выбранной формы *GCD*. Ниже представлено графическая интерпритация формул из [[2]](#ссылки)
 
-![Andness и Orness](Docs/Pasted%20image%2020240726120803.png)
+![Andness и Orness](Docs/Pasted%20image%2020240726120803.png).
+
+Для расчета значений $\overline{\text{Andness}}$ и $\overline{\text{Orness}}$ используется аппроксимация интеграла методом Монте Карло.
 
 ## Функциональная зависимость
+
 Зависимые критерии (призмы) позволяют задавать им функциональную зависимость от $y_i$.
 
 ![alt text](Docs/cylMenu.png)
@@ -173,7 +176,9 @@ $$
 Логика работы панели (рассчет угла наклона, добавление цилиндров на панель, удаление цилиндров, вызов обработки загрузки и вызов обработки сохранения) реализована в файле [Panel.cs](Assets/Scripts/Panel.cs).
 
 ### Расчет угла
-Рассчет угла реализован в методе **CalculateAngle**
+
+Рассчет угла реализован в методе `CalculateAngle`.
+
 ```csharp
 private float CalculateAngle()
     {
@@ -190,6 +195,8 @@ private float CalculateAngle()
 Данный угол принимает значения в диапазоне $[0,1]$ Для правильного наклона используется коэффициент `float _maxAngleOffset` и обновляется во встроенной в Unity функции `Update()`
 
 Для добавления цилиндров реализованы методы `AddNewCylinder()` и `AddDependedCylinder()`, а также их перегруженные параметризованные версии `AddNewCylinder(Saver.LogicalCylinder logicalCylinder)` и `AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)`, используемые при загрузке/выгрузке состояния.
+
+Данные методы используются при нажатии кнопок на интерфейсе.
 
 ```csharp
     public Cylinder AddNewCylinder()
@@ -251,9 +258,109 @@ private float CalculateAngle()
     }
 ```
 
+Во встроеном методе Unity `Start` реализована загрузка состояния из памяти. В случае ее отсуствия будет выгружен пример с двумя критериями и одним зависимым.
+
+Метод `Save` вызывается нажатием кнопки на интерфейсе и сохраняет текущее состояние в память.
+
+Для сохранения необходимо преобразовать физический объект юнити, наследуемый `MonoBehavior` к сериализуемому классу `LogicalCylinder` и `DependedLogicalCylinder` про их реализацию в разделе [Реализация сохранения](#реализация-сохранения).
+```csharp
+public void Save()
+    {
+        List<Saver.LogicalCylinder> saveData = new List<Saver.LogicalCylinder>();
+        foreach (var c in _cylinders)
+        {
+            if (c is DependedCylinder)
+            {
+                var sav = new Saver.DependedLogicalCylinder
+                {
+                    Position = c.GetPos(),
+                    Name = c.name,
+                    Formula = (c as DependedCylinder).GetFormula(),
+                    Mass = c.GetMass(),
+                    color = c.GetColor()
+                };
+                saveData.Add(sav);
+                continue;
+            }
+            var lCyl = new Saver.LogicalCylinder
+            {
+                Position = c.GetPos(),
+                Name = c.name,
+                Mass = c.GetMass(),
+                color = c.GetColor()
+            };
+            saveData.Add(lCyl);
+        }
+        Saver.Save(saveData);
+    }
+```
+
 ## Реализация цилиндров
+Для работы цилиндров реализовано 2 класса `Cylinder` и `DependedCylinder`.\
+Для работы с цилиндрами используются методы `SetPos`, `SetMass`, `SetColor` для установки значений критерия. Для получения используются методы `GetPos` и `GetMass`.
+
+Данные методы необходимы для перевода физического положения цилиндра в значения положения $y$ по шкале на панели.
+```csharp
+public void SetPos(double pos)
+    {
+        var p = transform.localPosition;
+        p.z = -(float)Math.Clamp(pos, -1,1) * 5;
+        transform.localPosition = p;
+    }
+```
+
+```csharp
+public double GetPos()
+    {
+        return -transform.localPosition.z / 5;
+    }
+```
+
+`DependedCylinder` наследует реализацию `Cylinder` и реализует методы работы с формулами:
+
+```csharp
+  public void SetFormula(string f)
+   {
+      _formula = f;
+      UpdateFormula();
+   }
+
+   [ContextMenu("UpdateFormula")]
+   private void UpdateFormula()
+   {
+      _function = FormulaParser.CreateFunc(_formula.Replace(" ", ""));
+   }
+```
+Формулы интерпритируются при ее установке в меню, преобразовываясь из строки `string` в лямбда-функцию.
+Подробнее про расчет формул в разделе [Реализация формул](#реализация-формул).
 
 ## Реализация метрик
+
+Расчет метрик происходит в файле [Metrics.cs](/Assets/Scripts/Metrics.cs).\
+Методы `GetGCD` используется для получения формы *GCD*, выбранную на панели интерфейса. Метод `GetMetrics` рассчитывает все значения метрик для их дальнейшего отображения в интерфейсе.
+
+```csharp
+    private static float GetGCD(float conj, float disj) =>
+        (RadioSelector.Instanse.value) switch
+        {
+            "Arithmetic mean" => (conj + disj) / 2,
+            "Geometric mean" => Mathf.Sqrt(conj*disj),
+            "Max" => disj,
+            "Min" => conj,
+            "Simulation" => Panel.Instance.GetAngle(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+    public  static (float,float,float) GetMetrics()
+    {
+        var positions = Panel.Instance.GetCylinders().Where(it => it is not DependedCylinder).Select(it=> (float)it.GetPos()).ToList();
+
+        var conj = positions.Min();
+        var disj = positions.Max();
+        var gcd = GetGCD(conj, disj);
+        return (disj, conj, gcd);
+    }
+```
 
 ## Реализация формул
 

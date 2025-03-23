@@ -59,7 +59,7 @@ public class Metrics : MonoBehaviour
         };
 
     /// <summary>
-    ///
+    /// Calculates metrics from Panel instance
     /// </summary>
     /// <returns>
     /// Touple of max, min, gcd
