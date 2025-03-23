@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine.UIElements;
 
 public static class FormulaParser
 {
@@ -199,6 +200,7 @@ public class FunctionOperation : ICalculable
         {"sqrt", (param, a) => Math.Sqrt(a[0].Calculate(param))},
         {"max", (param, a) => a.Select(it => it.Calculate(param)).Max()},
         {"min", (param, a) => a.Select(it => it.Calculate(param)).Min()},
+        {"mean", (param, a) => a.Select(it => it.Calculate(param)).Sum() / a.Length},
         {"abs", (param, a) => Math.Abs(a[0].Calculate(param))},
         {"", (param, a) => a[0].Calculate(param)}
     };

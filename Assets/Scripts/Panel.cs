@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class Panel : MonoBehaviour
 {
 
+    [SerializeField] private GameObject _line;
     [SerializeField] private Cylinder _cylinder;
     [SerializeField] private DependedCylinder _dependedCylinder;
 
@@ -17,20 +19,9 @@ public class Panel : MonoBehaviour
 
     private float _angle;
     private List<Cylinder> _cylinders = new();
+    private List<Transform> _lines = new();
     public static Panel Instance { get; private set; }
 
-    private void Update()
-    {
-        var depCyls = _cylinders.OfType<DependedCylinder>().ToList();
-        var dict = GetCylPositions();
-        foreach (var c in depCyls)
-        {
-            c.ChangePosition(dict);
-        }
-        
-        _angle = CalculateAngle();
-        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-_angle* _maxAngleOffset,0,0),0.1f);
-    }
 
     private float CalculateAngle()
     {
@@ -43,20 +34,22 @@ public class Panel : MonoBehaviour
         return Mathf.Clamp(angle, 0, 1);
     }
 
-    private Dictionary<string, double> GetCylPositions()=> 
-        _cylinders.ToDictionary(cylinder => cylinder.name, cylinder=> cylinder.GetPos());
+    private Dictionary<string, double> GetCylPositions() =>
+        _cylinders.ToDictionary(cylinder => cylinder.name, cylinder => cylinder.GetPos());
 
     private void Resize()
     {
         var mid = (float)_cylinders.Count / 2;
-        for(int i = 0; i < _cylinders.Count; i++)
+        for (int i = 0; i < _cylinders.Count; i++)
         {
             var pos = _cylinders[i].transform.localPosition;
             pos.y = 1;
             pos.x = (i - mid) * 2 + 1f;
             _cylinders[i].transform.localPosition = pos;
+            _lines[i].localPosition = new Vector3(pos.x, 0, 0);
         }
-        _plane.localScale = new Vector3(_cylinders.Count/5.0f, 1, 1);
+
+        _plane.localScale = new Vector3(_cylinders.Count / 5.0f, 1, 1);
     }
 
     private void Start()
@@ -71,64 +64,57 @@ public class Panel : MonoBehaviour
 
         foreach (var cyl in data)
         {
-            AddNewCylinder(cyl);
+            if (cyl is Saver.DependedLogicalCylinder) AddDependedCylinder(cyl as Saver.DependedLogicalCylinder);
+            else AddNewCylinder(cyl);
         }
 
-        var depDate = Saver.LoadDependedCylinders();
-        if(depDate == null) return;
-        foreach (var d in depDate)
-        {
-            AddDependedCylinder(d);
-        }
     }
 
-    private DependedCylinder AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)
+    private void Update()
     {
-        var obj = Instantiate(_dependedCylinder, transform);
-        _cylinders.Add(obj);
-        obj.SetFormula(dependedLogicalCylinder.Formula);
-        obj.name = dependedLogicalCylinder.Name;
-        obj.SetMass(dependedLogicalCylinder.Mass);
-        obj.SetColor(dependedLogicalCylinder.color);
-        Resize();
-        return obj;
+        var depCyls = _cylinders.OfType<DependedCylinder>().ToList();
+        var dict = GetCylPositions();
+        foreach (var c in depCyls)
+        {
+            c.ChangePosition(dict);
+        }
+
+        _angle = CalculateAngle();
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(-_angle * _maxAngleOffset, 0, 0), 0.1f);
     }
+
 
     private int GetIndex()
     {
         int max = -1;
-            foreach (var c in _cylinders)
+        foreach (var c in _cylinders)
+        {
+            var match = Regex.Match(c.name, @"^\w*?\[(\d*)\]$");
+            if (match.Success)
             {
-                var match = Regex.Match(c.name, @"^\w*?\[(\d*)\]$");
-                if (match.Success)
-                {
-                    if (int.TryParse(match.Groups[1].Value, out int val))
-                        max = (max < val ? val : max);
-                }
+                if (int.TryParse(match.Groups[1].Value, out int val))
+                    max = (max < val ? val : max);
             }
+        }
 
-            return max+1;
+        return max + 1;
     }
-    private String GetNewPrimaryName()
+
+    private string GetNewPrimaryName()
     {
         var index = GetIndex();
         return $"Y[{index}]";
     }
 
-    private String GetNewDependedName()
+    private string GetNewDependedName()
     {
         var index = GetIndex();
         return $"G[{index}]";
     }
 
-    public Cylinder AddNewCylinder()
+    private void AddLine()
     {
-        var obj = Instantiate(_cylinder, transform);
-        _cylinders.Add(obj);
-        obj.SetPos(0);
-        obj.name = GetNewPrimaryName();
-        Resize();
-        return obj;
+        _lines.Add(Instantiate(_line, transform).transform);
     }
 
     public void AddNewCylinderButton()
@@ -140,17 +126,29 @@ public class Panel : MonoBehaviour
     {
         AddDependedCylinder();
     }
+
+    public Cylinder AddNewCylinder()
+    {
+        var obj = Instantiate(_cylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetPos(0);
+        obj.name = GetNewPrimaryName();
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+
     public Cylinder AddNewCylinder(Saver.LogicalCylinder logicalCylinder)
     {
         var obj = Instantiate(_cylinder, transform);
         _cylinders.Add(obj);
-        //var pos = obj.transform.localPosition;
-        //pos.z = logicalCylinder.Position;
         obj.SetMass(logicalCylinder.Mass);
         obj.SetPos(logicalCylinder.Position);
-        //obj.transform.localPosition = pos;
         obj.name = logicalCylinder.Name;
         obj.SetColor(logicalCylinder.color);
+
+        AddLine();
         Resize();
         return obj;
     }
@@ -161,6 +159,22 @@ public class Panel : MonoBehaviour
         _cylinders.Add(obj);
         obj.SetFormula("0");
         obj.name = GetNewDependedName();
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+
+    private DependedCylinder AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)
+    {
+        var obj = Instantiate(_dependedCylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetFormula(dependedLogicalCylinder.Formula);
+        obj.name = dependedLogicalCylinder.Name;
+        obj.SetMass(dependedLogicalCylinder.Mass);
+        obj.SetColor(dependedLogicalCylinder.color);
+
+        AddLine();
         Resize();
         return obj;
     }
@@ -168,8 +182,7 @@ public class Panel : MonoBehaviour
     public void Save()
     {
         List<Saver.LogicalCylinder> saveData = new List<Saver.LogicalCylinder>();
-        List<Saver.DependedLogicalCylinder> saveData2 = new List<Saver.DependedLogicalCylinder>();
-        foreach(var c in _cylinders)
+        foreach (var c in _cylinders)
         {
             if (c is DependedCylinder)
             {
@@ -181,7 +194,7 @@ public class Panel : MonoBehaviour
                     Mass = c.GetMass(),
                     color = c.GetColor()
                 };
-                saveData2.Add(sav);
+                saveData.Add(sav);
                 continue;
             }
             var lCyl = new Saver.LogicalCylinder
@@ -194,22 +207,22 @@ public class Panel : MonoBehaviour
             saveData.Add(lCyl);
         }
         Saver.Save(saveData);
-        Saver.Save(saveData2);
     }
-    
-        [ContextMenu("Random")]
+
+
+    [ContextMenu("Random")]
     private void PlaceRandomCylinders()
     {
         Clear();
         var count = Random.Range(2, 10);
-        for (var i = 0; i < count; i+=2)
+        for (var i = 0; i < count; i += 2)
         {
             AddNewCylinder();
             AddDependedCylinder();
         }
         Resize();
     }
-    
+
     [ContextMenu("Clear")]
     private void Clear()
     {
@@ -221,14 +234,14 @@ public class Panel : MonoBehaviour
     {
         _cylinders.Remove(cylinder);
         Destroy(cylinder.gameObject);
+
+        Destroy(_lines[0].gameObject);
+        _lines.RemoveAt(0);
+
         Resize();
     }
 
-    public float GetAngle()
-    {
-        //return (_angle+1)/2;
-        return (_angle);
-    }
+    public float GetAngle() => _angle;
 
     public IReadOnlyList<Cylinder> GetCylinders() => _cylinders;
 
@@ -239,6 +252,6 @@ public class Panel : MonoBehaviour
         var cyl3 = AddDependedCylinder();
         cyl1.SetMass(0);
         cyl2.SetMass(0);
-        cyl3.SetFormula($"min({cyl1.name},{cyl2.name})");
+        cyl3.SetFormula($"min({cyl1.name}, {cyl2.name})");
     }
 }

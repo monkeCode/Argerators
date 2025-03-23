@@ -14,7 +14,7 @@ public class DependedCylinder : Cylinder
       var position = transform.localPosition;
       var res = CalculateFormula(nameToPos);
       res = Math.Clamp(res, -1, 1);
-      position.z = 5 * res;
+      position.z = -5 * res;
       transform.localPosition = position;
    }
 

@@ -385,6 +385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 750779cef4d636546bd1e60a181174de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _line: {fileID: 7498175921810409340, guid: 8dc917434ac4ca247af2ff79147397da, type: 3}
   _cylinder: {fileID: -3636756998327699320, guid: b0098d22fa7bc3d41b6f8bff2aa3d530, type: 3}
   _dependedCylinder: {fileID: -8206784143169227393, guid: 8f4452836f67c384da14483e3a8640d3, type: 3}
   _plane: {fileID: 8456839323263555544}

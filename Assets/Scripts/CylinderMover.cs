@@ -64,7 +64,9 @@ public class CylinderMover : MonoBehaviour
             var z = new_vector.z * n + new_point.z;
 
             var position = _cylinder.transform.localPosition;
-            var newPos = new Vector3(position.x, position.y,  Mathf.Clamp(z - plane.transform.position.z, -5, 5));
+
+            //Ограничение от 0 до 1 для движения цилиндров мышкой
+            var newPos = new Vector3(position.x, position.y,  Mathf.Clamp(z - plane.transform.position.z, -5, 0));
             _cylinder.transform.localPosition = newPos;
 
             // Debug.Log($"{new_point}, {new_vector}");

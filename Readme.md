@@ -107,8 +107,157 @@ $$
 ![Andness и Orness](Docs/Pasted%20image%2020240726120803.png)
 
 ## Функциональная зависимость
+Зависимые критерии (призмы) позволяют задавать им функциональную зависимость от $y_i$.
+
+![alt text](Docs/cylMenu.png)
+
+Для зависимых критериев поле *position* не является функциональным и их положение напрямую задается формулой.
+В данном примере положение критерия будет соответствовать формуле $g_1 = min(y_0, y_1)$.
+Для получения позиции критерия необходимо записать его полное имя (например $Y[1]$ или любое введенное пользователем наименование, [подробнее](#интерфейс-критериев)).
+
+### Операции
+
+|Название операции|Тип|Семантика|Пример|
+|---------|-----|----|----|
+|Сложение|Бинарная| L + R | $2 + Y[1]$|
+|Вычитание|Бинарная| L - R | $1 - Y[4]$|
+|Умножение| Бинарная| L * R| $0.35*Y[4]$|
+|Деление| Бинарная| L / R| $Y[4]/2$|
+|Унарный минус| Унарная| - R| $-Y[2]$|
+|Возведение в степень| Бинарная| L^R| $1$^$Y[1]$|
+
+> [!important] Важно
+>
+> 1. Десятичным разделителем является точка (.)
+> 2. Разделителем аргументов функций является запятая (,)
+> 3. Необходимо явно указывать умножение (*)
+> (пример $2.214 * Y[1]$, при написании  $2.214Y[1]$ будет синтаксическая ошибка)
+> 4. Приоритетность выполнения операций соотвествует алгебраическим правилам:
+    1. Возведение в степень\
+    2. Умножение\
+    3. Деление\
+    4. Сложение/Вычитание
+
+### Скобки
+Для задания приоритета операциям и отдельным блокам формулы возможно использовать скобки, также одинаковые скобковые выражения в одной формуле будут интерпретированы единожды, что повышает скорость интерпритации выражений.
+
+На текущий момент в качестве скобок возможно использовать лишь "(" и ")". Все остальные виды скобок будут интерпритироваться как текст.
+
+### Функции
+Явно обьявленные в коде программы функции могут быть использованы при интерпритации формул, подробнее про реализацию и добавление функций в разделе [Реализация формул](#реализация-формул).
+
+#### Реализованные функци
+
+|Формула| Количество операндов |Математический смысл|
+|--|--|--|
+|sin(A)|1| $\sin(A)$|
+|cos(A)|1| $\cos(A)$|
+|tan(A)|1| $\tan(A)$|
+|exp(A)|1| $e^{A}$|
+|sqrt(A)|1| $\sqrt{A}$|
+|max($A_1$, ...)| >1| $\max(A_0, \dots, A_n)$|
+|min($A_1$, ...)| >1| $\min(A_0, \dots, A_n)$|
+|mean($A_1$, ...)| >1| $\frac{1}{n} \sum_i^n(A_i)$|
+|abs(A)| 1| $\|A\|$|
+
+В качестве аргументов функции могут выступать значения критериев, константы, а также целые выражения в т.ч. другие формулы.
 
 # Разработка
+
+В данном разделе описаны основные части программного кода и приведены примеры их модификации.
+
+Все файлы с программным кодом находятся в директории **Assets/Scripts**.
+
+## Реализация панели
+
+Логика работы панели (рассчет угла наклона, добавление цилиндров на панель, удаление цилиндров, вызов обработки загрузки и вызов обработки сохранения) реализована в файле [Panel.cs](Assets/Scripts/Panel.cs).
+
+### Расчет угла
+Рассчет угла реализован в методе **CalculateAngle**
+
+```csharp
+private float CalculateAngle()
+    {
+        var angle = 0.0f;
+        foreach (var cyl in _cylinders)
+        {
+            float dist = (float)cyl.GetPos();
+            angle += (dist) * cyl.GetMass();
+        }
+        return Mathf.Clamp(angle, 0, 1);
+    }
+```
+Для добавления цилиндров реализованы методы **AddNewCylinder()** и **AddDependedCylinder()**, а также их перегруженные параметризованные версии **AddNewCylinder(Saver.LogicalCylinder logicalCylinder)** и **AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)**
+
+```csharp
+    public Cylinder AddNewCylinder()
+    {
+        var obj = Instantiate(_cylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetPos(0);
+        obj.name = GetNewPrimaryName();
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+```
+
+```csharp
+    public Cylinder AddNewCylinder(Saver.LogicalCylinder logicalCylinder)
+    {
+        var obj = Instantiate(_cylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetMass(logicalCylinder.Mass);
+        obj.SetPos(logicalCylinder.Position);
+        obj.name = logicalCylinder.Name;
+        obj.SetColor(logicalCylinder.color);
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+```
+
+```csharp
+    public DependedCylinder AddDependedCylinder()
+    {
+        var obj = Instantiate(_dependedCylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetFormula("0");
+        obj.name = GetNewDependedName();
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+```
+
+```csharp
+    private DependedCylinder AddDependedCylinder(Saver.DependedLogicalCylinder dependedLogicalCylinder)
+    {
+        var obj = Instantiate(_dependedCylinder, transform);
+        _cylinders.Add(obj);
+        obj.SetFormula(dependedLogicalCylinder.Formula);
+        obj.name = dependedLogicalCylinder.Name;
+        obj.SetMass(dependedLogicalCylinder.Mass);
+        obj.SetColor(dependedLogicalCylinder.color);
+
+        AddLine();
+        Resize();
+        return obj;
+    }
+```
+
+## Реализация цилиндров
+
+## Реализация метрик
+
+## Реализация формул
+
+## Реализация сохранения
+
+## Реализация интерфейса
 
 # Ссылки
 
