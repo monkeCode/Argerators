@@ -7,11 +7,15 @@
 На плоскости располагаются критерии $Y_1, \dots, Y_n$, представленные цилиндрами. Для критериев определены такие характеристики как вес $w_i$ и положение $y_i$ на оси, перпендикулярной оси плоскости.
 Также на плоскости размещаются зависимые критерии $G_1, \dots, G_n$ (представленные призмами), положение которых выражается некоторой заданной функцией $f_i(y_1,\dots, y_n)$ ,  и заданным весом $g_i$.
 
-
 Также данная система была оснащена метриками *andness* и *orness*, а также возможностью выбора и моделирования *Graded conjunction/disjunction (GCD)* из [[2]](#ссылки).
 
 ![alt text](Docs/model.png) \
 *Внешний вид физической симуляции симуляции*
+
+## Развертывание
+
+Для развертывания необходимо скачать релиз на странице [релизов](https://github.com/monkeCode/Argerators/releases). И в папке выполнить команду `docker compose up`.\
+Доступ осуществляется по ссылке [http://localhost:3000](http://localhost:3000).
 
 ## Интерфейс
 
@@ -129,8 +133,7 @@ $$
 |Унарный минус| Унарная| - R| $-Y[2]$|
 |Возведение в степень| Бинарная| L^R| $1$ ^ $Y[1]$|
 
-> [!important] Важно
->
+> [!IMPORTANT] Важно
 > 1. Десятичным разделителем является точка (.)
 > 2. Разделителем аргументов функций является запятая (,)
 > 3. Необходимо явно указывать умножение (*)
@@ -364,9 +367,128 @@ public double GetPos()
 
 ## Реализация формул
 
+Интерпритатор для формул находится в файле [FormulaParser.cs](/Assets/Scripts/FormulaParser.cs). Вызов статического метода `ICalculable CreateFunc(string expression)`, который принимает строку как параметр и возвращает объект, реализующий интерфейс `ICalculable`. Интерфейс содержит нотацию одного метода `double Calculate(Dictionary<string, double> parameters)`. Код интерфейса представлен ниже.
+
+```csharp
+public interface ICalculable
+{
+    double Calculate(Dictionary<string, double> parameters);
+}
+```
+
+Каждый элемент в формуле должен реализовывать этот интерфейс, на данный момент элементы подразеделны на следующие типы:
+
+1. `VariableOperand` - используется для подстановки значений вместо имен критериев;
+2. `ConstOperand` - используется для интерпритации констант;
+3. `BinaryOperation` - используется для интерпритации бинарных операций.\
+    Все бинарные операции сохранены в ассоциативной коллекции в классе `BinaryOperation`, для добавления новых бинарных операций необходимо добавить их в следующий блок кода:
+
+    ```csharp
+        private static Dictionary<string, Func<Dictionary<string, double>, ICalculable, ICalculable, double>> _operations = new()
+        {
+            {"-", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) - a2.Calculate(param)},
+            {"+", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) + a2.Calculate(param)},
+            {"/", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) / a2.Calculate(param)},
+            {"*", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => a1.Calculate(param) * a2.Calculate(param)},
+            {"^", (Dictionary<string, double> param,ICalculable a1, ICalculable a2) => Math.Pow(a1.Calculate(param), a2.Calculate(param))},
+        };
+    ```
+
+4. `FunctionOperation` - используется для интерпритации функций.\
+    Аналогично бинарным операциям, для добавления новых функций необходимо определить их интерпритацию в следующей ассоциативной коллекции:
+    ```csharp
+    private static Dictionary<string, Func<Dictionary<string, double>, ICalculable[], double>> _operations = new()
+        {
+            {"sin", (param, a) => Math.Sin(a[0].Calculate(param))},
+            {"cos", (param, a) => Math.Cos(a[0].Calculate(param))},
+            {"tan", (param, a) => Math.Tan(a[0].Calculate(param))},
+            {"exp", (param, a) => Math.Exp(a[0].Calculate(param))},
+            {"sqrt", (param, a) => Math.Sqrt(a[0].Calculate(param))},
+            {"max", (param, a) => a.Select(it => it.Calculate(param)).Max()},
+            {"min", (param, a) => a.Select(it => it.Calculate(param)).Min()},
+            {"mean", (param, a) => a.Select(it => it.Calculate(param)).Sum() / a.Length},
+            {"abs", (param, a) => Math.Abs(a[0].Calculate(param))},
+            {"", (param, a) => a[0].Calculate(param)}
+        };
+    ```
+
 ## Реализация сохранения
 
-## Реализация интерфейса
+Сохранение реализуется в PlayerPrefs по ключу *"save"* в памяти. Для удобства работы с загрузкой/выгрузкой состояния определен класс `Saver` в файле [Saver.cs](/Assets/Scripts/Saver.cs).
+
+Класс `Saver` содержит определения сериализуемых дата-классов для критериев, а также методы `Save` и `Load` для работы с состоянием.
+
+Классы `LogicalCylinder` и `DependedLogicalCylinder` представляют параллельную иерархию классам `Cylinder` и `DependedCylinder` имея только публичные поля с состоянием критериев, которые возможно сериализовать. А также не наследуя `MonoBehavior`.
+
+```csharp
+[Serializable]
+public class LogicalCylinder
+{
+    public double Position;
+    public string Name;
+    public float Mass;
+    public Color color;
+}
+
+[Serializable]
+public class DependedLogicalCylinder : LogicalCylinder
+{
+    public string Formula;
+}
+```
+
+Метод `Save` принимает в качестве аргумента `List<LogicalCylinder>`, а `Load` его возвращает. Эти методы инкапсулируют сериализацию/десериализацию и сохранение/выгрузку состояния. Необходимо вручную преобразовывать объект класса `Cylinder` к классу `LogicalCylinder`.
+
+## Развертывание
+
+Для развертывания программы может быть использован любой сервер статических файлов. В текущей реализации используется Nginx.
+
+Для развертывания была написана следующая docker compose конфигурация:
+
+```yaml
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx_server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./build:/var/www/files
+    restart: unless-stopped
+```
+
+и кофигурация для nginx:
+
+```nginx
+worker_processes 1;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    types {
+        application/wasm wasm;
+    }
+
+    server {
+        listen 3000;
+        server_name localhost;
+
+        location / {
+            root /var/www/files/;
+            index index.html;
+        }
+    }
+}
+```
 
 # Ссылки
 

@@ -31,8 +31,8 @@ public static class Saver
     [Serializable]
     private class SerializedCylinder
     {
-        public string Type; // Тип объекта (LogicalCylinder или DependedLogicalCylinder)
-        public string Data; // Сериализованные данные объекта
+        public string Type;
+        public string Data;
     }
 
     public static void Save(List<LogicalCylinder> cylinders)
